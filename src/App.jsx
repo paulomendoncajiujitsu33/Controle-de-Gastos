@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
@@ -26,6 +26,27 @@ const MOEDAS = [
   { codigo: "GBP", nome: "Libra", locale: "en-GB" },
 ];
 
+const BANDEIRAS = ["Visa", "Mastercard"];
+
+const CORES_CARTAO = [
+  { nome: "Preto", valor: "#141414" },
+  { nome: "Branco", valor: "#F5F5F5" },
+  { nome: "Vermelho", valor: "#DC2626" },
+  { nome: "Azul", valor: "#1D4ED8" },
+  { nome: "Dourado", valor: "#B8952E" },
+  { nome: "Prata", valor: "#9CA3AF" },
+  { nome: "Verde", valor: "#16A34A" },
+  { nome: "Roxo", valor: "#7C3AED" },
+];
+
+function escurecerCor(hex, quantidade = 40) {
+  const num = parseInt(hex.replace("#", ""), 16);
+  let r = Math.max(0, (num >> 16) - quantidade);
+  let g = Math.max(0, ((num >> 8) & 0x00FF) - quantidade);
+  let b = Math.max(0, (num & 0x0000FF) - quantidade);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
 function corCategoria(nome) {
   return (CATEGORIAS.find((c) => c.nome === nome) || CATEGORIAS[CATEGORIAS.length - 1]).cor;
 }
@@ -46,6 +67,7 @@ function iniciais(nome) {
 
 const CHAVE_LANCAMENTOS = "controle-gastos:lancamentos";
 const CHAVE_CARTOES = "controle-gastos:cartoes";
+const CHAVE_CARTAO_INFO = "controle-gastos:cartaoInfo";
 const CHAVE_MOEDA = "controle-gastos:moeda";
 const CHAVE_PERFIL = "controle-gastos:perfil";
 const CHAVE_SALARIO = "controle-gastos:salario";
@@ -53,11 +75,16 @@ const CHAVE_TEMA = "controle-gastos:tema";
 
 export default function App() {
   const hoje = new Date();
+  const corPersonalizadaRef = useRef(null);
   const [aba, setAba] = useState("home");
   const [ano, setAno] = useState(hoje.getFullYear());
   const [mes, setMes] = useState(hoje.getMonth());
   const [lancamentos, setLancamentos] = useState([]);
   const [cartoes, setCartoes] = useState([]);
+  const [cartaoInfo, setCartaoInfo] = useState({});
+  const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
+  const [editandoCartao, setEditandoCartao] = useState(null);
+  const [formCartao, setFormCartao] = useState({ nome: "", bandeira: BANDEIRAS[0], cor: CORES_CARTAO[0].valor });
   const [moeda, setMoeda] = useState(MOEDAS[0]);
   const [nome, setNome] = useState("");
   const [salario, setSalario] = useState("");
@@ -86,6 +113,10 @@ export default function App() {
     try {
       const s = localStorage.getItem(CHAVE_CARTOES);
       if (s) setCartoes(JSON.parse(s));
+    } catch (e) {}
+    try {
+      const s = localStorage.getItem(CHAVE_CARTAO_INFO);
+      if (s) setCartaoInfo(JSON.parse(s));
     } catch (e) {}
     try {
       const s = localStorage.getItem(CHAVE_MOEDA);
@@ -231,9 +262,50 @@ export default function App() {
     }
   }
 
+  function salvarCartaoInfo(info) {
+    setCartaoInfo(info);
+    try {
+      localStorage.setItem(CHAVE_CARTAO_INFO, JSON.stringify(info));
+    } catch (e) {}
+  }
+
+  function abrirModalCartao(nomeExistente) {
+    if (nomeExistente) {
+      const info = cartaoInfo[nomeExistente] || {};
+      setFormCartao({
+        nome: nomeExistente,
+        bandeira: info.bandeira || BANDEIRAS[0],
+        cor: info.cor || CORES_CARTAO[0].valor,
+      });
+      setEditandoCartao(nomeExistente);
+    } else {
+      setFormCartao({ nome: "", bandeira: BANDEIRAS[0], cor: CORES_CARTAO[0].valor });
+      setEditandoCartao(null);
+    }
+    setModalCartaoAberto(true);
+  }
+
+  function salvarFormCartao(e) {
+    e.preventDefault();
+    const nome = formCartao.nome.trim();
+    if (!nome) return;
+    if (!editandoCartao) {
+      if (cartoes.includes(nome)) return;
+      salvarCartoes([...cartoes, nome]);
+    }
+    salvarCartaoInfo({
+      ...cartaoInfo,
+      [nome]: { bandeira: formCartao.bandeira, cor: formCartao.cor },
+    });
+    setModalCartaoAberto(false);
+  }
+
   function removerCartao(c) {
     if (confirm(`Remover o cartão "${c}"? Os lançamentos feitos nele continuam salvos.`)) {
       salvarCartoes(cartoes.filter((x) => x !== c));
+      const novoInfo = { ...cartaoInfo };
+      delete novoInfo[c];
+      salvarCartaoInfo(novoInfo);
     }
   }
 
@@ -393,7 +465,7 @@ export default function App() {
           <>
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Meus cartões</h1>
-              <button onClick={adicionarCartao} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
+              <button onClick={() => abrirModalCartao(null)} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
                 <Plus size={18} color="#fff" />
               </button>
             </div>
@@ -402,33 +474,41 @@ export default function App() {
               <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
                 <CreditCard size={28} color="#C4B5FD" className="mx-auto mb-3" />
                 <p className="text-sm mb-4" style={{ color: T.textSecondary }}>Você ainda não tem cartões cadastrados.</p>
-                <button onClick={adicionarCartao} className="text-sm font-semibold px-4 py-2 rounded-full text-white" style={{ background: "#7C3AED" }}>
+                <button onClick={() => abrirModalCartao(null)} className="text-sm font-semibold px-4 py-2 rounded-full text-white" style={{ background: "#7C3AED" }}>
                   Adicionar cartão
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
-                {cartoes.map((c, i) => (
-                  <div
-                    key={c}
-                    className="rounded-2xl p-5 relative overflow-hidden"
-                    style={{
-                      background: i % 2 === 0
-                        ? "linear-gradient(135deg, #7C3AED, #5B21B6)"
-                        : "linear-gradient(135deg, #1E1B2E, #3F3B54)",
-                    }}
-                  >
-                    <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
-                    <div className="flex items-center justify-between mb-8 relative">
-                      <p className="text-sm font-semibold text-white">{c}</p>
-                      <button onClick={() => removerCartao(c)} className="opacity-70 hover:opacity-100">
-                        <Trash2 size={15} color="#fff" />
-                      </button>
+                {cartoes.map((c) => {
+                  const info = cartaoInfo[c] || {};
+                  const cor = info.cor || CORES_CARTAO[0].valor;
+                  const bandeira = info.bandeira || BANDEIRAS[0];
+                  return (
+                    <div
+                      key={c}
+                      onClick={() => abrirModalCartao(c)}
+                      className="rounded-2xl p-5 relative overflow-hidden cursor-pointer"
+                      style={{ background: `linear-gradient(135deg, ${cor}, ${escurecerCor(cor)})` }}
+                    >
+                      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+                      <div className="flex items-center justify-between mb-8 relative">
+                        <p className="text-sm font-semibold text-white">{c}</p>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removerCartao(c); }}
+                          className="opacity-70 hover:opacity-100"
+                        >
+                          <Trash2 size={15} color="#fff" />
+                        </button>
+                      </div>
+                      <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.65)" }}>Gasto em {MESES_LONGOS[mes]}</p>
+                      <div className="flex items-end justify-between">
+                        <p className="text-2xl font-extrabold text-white">{formatoMoeda(porCartao[c] || 0)}</p>
+                        <span className="text-xs font-black italic tracking-wide text-white opacity-90">{bandeira.toUpperCase()}</span>
+                      </div>
                     </div>
-                    <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.65)" }}>Gasto em {MESES_LONGOS[mes]}</p>
-                    <p className="text-2xl font-extrabold text-white">{formatoMoeda(porCartao[c] || 0)}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -765,6 +845,150 @@ export default function App() {
               style={{ background: "#7C3AED" }}
             >
               Salvar gasto
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Modal de bandeira e cor do cartão */}
+      {modalCartaoAberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: "rgba(30,27,46,0.5)" }}
+          onClick={() => setModalCartaoAberto(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={salvarFormCartao}
+            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6"
+            style={{ background: T.card }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-extrabold" style={{ color: T.text }}>
+                {editandoCartao ? "Editar cartão" : "Novo cartão"}
+              </h2>
+              <button type="button" onClick={() => setModalCartaoAberto(false)} aria-label="Fechar">
+                <X size={18} color={T.textSecondary} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Nome do cartão</label>
+                <input
+                  autoFocus={!editandoCartao}
+                  disabled={!!editandoCartao}
+                  value={formCartao.nome}
+                  onChange={(e) => setFormCartao({ ...formCartao, nome: e.target.value })}
+                  placeholder="Ex: Nubank"
+                  className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none disabled:opacity-60"
+                  style={{ borderColor: T.border, color: T.text }}
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Bandeira</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {BANDEIRAS.map((b) => (
+                    <button
+                      type="button"
+                      key={b}
+                      onClick={() => setFormCartao({ ...formCartao, bandeira: b })}
+                      className="text-xs font-medium px-3 py-1.5 rounded-full"
+                      style={{
+                        background: formCartao.bandeira === b ? "#7C3AED" : T.track,
+                        color: formCartao.bandeira === b ? "#fff" : T.pillText,
+                      }}
+                    >
+                      {b}
+                    </button>
+                  ))}
+
+                  {formCartao.bandeira && !BANDEIRAS.includes(formCartao.bandeira) && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium px-3 py-1.5 rounded-full"
+                      style={{ background: "#7C3AED", color: "#fff" }}
+                    >
+                      {formCartao.bandeira}
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const b = prompt("Nome da bandeira:");
+                      if (b && b.trim()) setFormCartao({ ...formCartao, bandeira: b.trim() });
+                    }}
+                    className="text-xs font-medium px-3 py-1.5 rounded-full"
+                    style={{ border: `1px dashed ${T.textSecondary}`, color: T.textSecondary }}
+                  >
+                    + personalizada
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Cor</label>
+                <div className="flex flex-wrap gap-3 mt-3">
+                  {CORES_CARTAO.map((cr) => (
+                    <button
+                      type="button"
+                      key={cr.valor}
+                      onClick={() => setFormCartao({ ...formCartao, cor: cr.valor })}
+                      aria-label={cr.nome}
+                      className="w-9 h-9 rounded-full flex items-center justify-center"
+                      style={{
+                        background: cr.valor,
+                        border: formCartao.cor === cr.valor ? `3px solid ${T.text}` : "3px solid transparent",
+                        outline: formCartao.cor === cr.valor ? `1px solid ${cr.valor}` : "none",
+                      }}
+                    />
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => corPersonalizadaRef.current?.click()}
+                    aria-label="Escolher cor personalizada"
+                    className="w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
+                    style={{
+                      background: CORES_CARTAO.some((cr) => cr.valor === formCartao.cor)
+                        ? T.track
+                        : formCartao.cor,
+                      border: !CORES_CARTAO.some((cr) => cr.valor === formCartao.cor)
+                        ? `3px solid ${T.text}`
+                        : `1px dashed ${T.textSecondary}`,
+                    }}
+                  >
+                    {CORES_CARTAO.some((cr) => cr.valor === formCartao.cor) && (
+                      <Plus size={16} color={T.textSecondary} />
+                    )}
+                    <input
+                      ref={corPersonalizadaRef}
+                      type="color"
+                      value={formCartao.cor}
+                      onChange={(e) => setFormCartao({ ...formCartao, cor: e.target.value })}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className="rounded-2xl p-4 mt-2"
+                style={{ background: `linear-gradient(135deg, ${formCartao.cor}, ${escurecerCor(formCartao.cor)})` }}
+              >
+                <p className="text-xs font-semibold text-white">{formCartao.nome || "Nome do cartão"}</p>
+                <p className="text-[10px] font-black italic text-white opacity-90 mt-3">{formCartao.bandeira.toUpperCase()}</p>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full mt-6 py-3 rounded-xl text-sm font-bold text-white"
+              style={{ background: "#7C3AED" }}
+            >
+              {editandoCartao ? "Salvar alterações" : "Adicionar cartão"}
             </button>
           </form>
         </div>
