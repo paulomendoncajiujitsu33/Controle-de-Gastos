@@ -368,6 +368,16 @@ export default function App() {
       `}</style>
 
       <div
+        className="fixed top-0 left-0 right-0 z-40 pointer-events-none transition-colors duration-500"
+        style={{
+          height: "env(safe-area-inset-top)",
+          background: `${T.bg}CC`,
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
+      />
+
+      <div
         className="max-w-md mx-auto px-5 min-h-screen"
         style={{
           paddingTop: "max(calc(env(safe-area-inset-top) + 1rem), 4.5rem)",
