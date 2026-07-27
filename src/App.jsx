@@ -1,16 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
+  Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
+  Home, PieChart as PieChartIcon, User, Wallet,
+} from "lucide-react";
 
 const MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 const CATEGORIAS = [
-  { nome: "Alimentação", cor: "#C6A15B" },
-  { nome: "Transporte", cor: "#7C9885" },
-  { nome: "Casa", cor: "#8B7FA8" },
-  { nome: "Saúde", cor: "#C4694F" },
-  { nome: "Lazer", cor: "#6FA3C9" },
-  { nome: "Assinaturas", cor: "#B08968" },
-  { nome: "Outros", cor: "#8A93A6" },
+  { nome: "Alimentação", cor: "#7C3AED" },
+  { nome: "Transporte", cor: "#F59E0B" },
+  { nome: "Casa", cor: "#EC4899" },
+  { nome: "Saúde", cor: "#22C55E" },
+  { nome: "Lazer", cor: "#3B82F6" },
+  { nome: "Assinaturas", cor: "#F97316" },
+  { nome: "Outros", cor: "#94A3B8" },
 ];
 
 const MOEDAS = [
@@ -29,18 +33,26 @@ function idNovo() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function iniciais(nome) {
+  if (!nome || !nome.trim()) return "?";
+  const partes = nome.trim().split(/\s+/);
+  return (partes[0][0] + (partes[1]?.[0] || "")).toUpperCase();
+}
+
 const CHAVE_LANCAMENTOS = "controle-gastos:lancamentos";
 const CHAVE_CARTOES = "controle-gastos:cartoes";
 const CHAVE_MOEDA = "controle-gastos:moeda";
+const CHAVE_PERFIL = "controle-gastos:perfil";
 
 export default function App() {
   const hoje = new Date();
+  const [aba, setAba] = useState("home");
   const [ano, setAno] = useState(hoje.getFullYear());
   const [mes, setMes] = useState(hoje.getMonth());
   const [lancamentos, setLancamentos] = useState([]);
   const [cartoes, setCartoes] = useState([]);
-  const [cartaoFiltro, setCartaoFiltro] = useState("Todos");
   const [moeda, setMoeda] = useState(MOEDAS[0]);
+  const [nome, setNome] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -57,22 +69,25 @@ export default function App() {
     return v.toLocaleString(moeda.locale, { style: "currency", currency: moeda.codigo });
   }
 
-  // Carrega dados salvos do navegador
   useEffect(() => {
     try {
-      const salvo = localStorage.getItem(CHAVE_LANCAMENTOS);
-      if (salvo) setLancamentos(JSON.parse(salvo));
+      const s = localStorage.getItem(CHAVE_LANCAMENTOS);
+      if (s) setLancamentos(JSON.parse(s));
     } catch (e) {}
     try {
-      const salvoCartoes = localStorage.getItem(CHAVE_CARTOES);
-      if (salvoCartoes) setCartoes(JSON.parse(salvoCartoes));
+      const s = localStorage.getItem(CHAVE_CARTOES);
+      if (s) setCartoes(JSON.parse(s));
     } catch (e) {}
     try {
-      const salvoMoeda = localStorage.getItem(CHAVE_MOEDA);
-      if (salvoMoeda) {
-        const encontrada = MOEDAS.find((m) => m.codigo === salvoMoeda);
-        if (encontrada) setMoeda(encontrada);
+      const s = localStorage.getItem(CHAVE_MOEDA);
+      if (s) {
+        const m = MOEDAS.find((x) => x.codigo === s);
+        if (m) setMoeda(m);
       }
+    } catch (e) {}
+    try {
+      const s = localStorage.getItem(CHAVE_PERFIL);
+      if (s) setNome(s);
     } catch (e) {}
     setCarregando(false);
   }, []);
@@ -95,20 +110,27 @@ export default function App() {
   }
 
   function mudarMoeda(codigo) {
-    const encontrada = MOEDAS.find((m) => m.codigo === codigo);
-    if (!encontrada) return;
-    setMoeda(encontrada);
+    const m = MOEDAS.find((x) => x.codigo === codigo);
+    if (!m) return;
+    setMoeda(m);
     try {
       localStorage.setItem(CHAVE_MOEDA, codigo);
+    } catch (e) {}
+  }
+
+  function salvarNome(valor) {
+    setNome(valor);
+    try {
+      localStorage.setItem(CHAVE_PERFIL, valor);
     } catch (e) {}
   }
 
   const doMes = useMemo(() => {
     return lancamentos.filter((l) => {
       const d = new Date(l.data);
-      return d.getFullYear() === ano && d.getMonth() === mes && (cartaoFiltro === "Todos" || l.cartao === cartaoFiltro);
+      return d.getFullYear() === ano && d.getMonth() === mes;
     });
-  }, [lancamentos, ano, mes, cartaoFiltro]);
+  }, [lancamentos, ano, mes]);
 
   const total = doMes.reduce((s, l) => s + l.valor, 0);
 
@@ -119,6 +141,15 @@ export default function App() {
     });
     return Object.entries(mapa).sort((a, b) => b[1] - a[1]);
   }, [doMes]);
+
+  const porCartao = useMemo(() => {
+    const mapa = {};
+    cartoes.forEach((c) => { mapa[c] = 0; });
+    doMes.forEach((l) => {
+      mapa[l.cartao] = (mapa[l.cartao] || 0) + l.valor;
+    });
+    return mapa;
+  }, [doMes, cartoes]);
 
   function mudarMes(delta) {
     let novoMes = mes + delta;
@@ -162,232 +193,408 @@ export default function App() {
     salvar(lancamentos.filter((l) => l.id !== id));
   }
 
-  const maiorCategoria = porCategoria[0]?.[1] || 1;
+  function adicionarCartao() {
+    const n = prompt("Nome do novo cartão:");
+    if (n && n.trim() && !cartoes.includes(n.trim())) {
+      salvarCartoes([...cartoes, n.trim()]);
+    }
+  }
+
+  function removerCartao(c) {
+    if (confirm(`Remover o cartão "${c}"? Os lançamentos feitos nele continuam salvos.`)) {
+      salvarCartoes(cartoes.filter((x) => x !== c));
+    }
+  }
+
+  const NAV = [
+    { id: "home", label: "Home", icone: Home },
+    { id: "card", label: "Cartões", icone: CreditCard },
+    { id: "stat", label: "Stat", icone: PieChartIcon },
+    { id: "profile", label: "Perfil", icone: User },
+  ];
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#10141C", fontFamily: "'Inter', sans-serif" }}>
-      <div className="max-w-md mx-auto px-5 pt-8 pb-28">
-        {/* Cabeçalho */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-[11px] tracking-[0.2em] uppercase" style={{ color: "#6B7280" }}>Extrato pessoal</p>
-            <h1 className="font-display text-2xl" style={{ color: "#F2EFE6" }}>Controle de Gastos</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={moeda.codigo}
-              onChange={(e) => mudarMoeda(e.target.value)}
-              className="text-xs font-mono bg-transparent border rounded-full px-2 py-1 outline-none cursor-pointer"
-              style={{ color: "#C6A15B", borderColor: "rgba(198,161,91,0.35)" }}
-              aria-label="Selecionar moeda"
-            >
-              {MOEDAS.map((m) => (
-                <option key={m.codigo} value={m.codigo} style={{ background: "#1B2233" }}>{m.codigo}</option>
-              ))}
-            </select>
-            <CreditCard size={22} color="#C6A15B" strokeWidth={1.5} />
-          </div>
-        </div>
+    <div className="min-h-screen w-full" style={{ background: "#F6F5FB", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+      `}</style>
 
-        {/* Cartão visual */}
-        <div
-          className="rounded-2xl p-6 mb-6 relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, #1B2233 0%, #232B40 55%, #1B2233 100%)",
-            border: "1px solid rgba(198,161,91,0.25)",
-          }}
-        >
-          <div
-            className="absolute -right-10 -top-10 w-40 h-40 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(198,161,91,0.15) 0%, transparent 70%)" }}
-          />
-          <div className="flex items-center justify-between mb-8 relative">
-            <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1 opacity-70 hover:opacity-100 transition-opacity">
-              <ChevronLeft size={18} color="#F2EFE6" />
-            </button>
-            <span className="text-xs tracking-[0.15em] uppercase font-mono" style={{ color: "#8A93A6" }}>
-              {MESES_LONGOS[mes]} {ano}
-            </span>
-            <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1 opacity-70 hover:opacity-100 transition-opacity">
-              <ChevronRight size={18} color="#F2EFE6" />
-            </button>
-          </div>
+      <div className="max-w-md mx-auto px-5 pt-8 pb-28 min-h-screen">
 
-          <p className="text-[11px] uppercase tracking-[0.2em] mb-1" style={{ color: "#8A93A6" }}>Total do mês</p>
-          <p className="font-display text-4xl mb-6" style={{ color: "#F2EFE6", letterSpacing: "0.01em" }}>
-            {formatoMoeda(total)}
-          </p>
-
-          <div className="flex items-center justify-between relative">
-            <select
-              value={cartaoFiltro}
-              onChange={(e) => setCartaoFiltro(e.target.value)}
-              className="text-xs font-mono bg-transparent border-none outline-none cursor-pointer"
-              style={{ color: "#C6A15B" }}
-            >
-              <option value="Todos" style={{ background: "#1B2233" }}>Todos os cartões</option>
-              {cartoes.map((c) => (
-                <option key={c} value={c} style={{ background: "#1B2233" }}>{c}</option>
-              ))}
-            </select>
-            <span className="text-[10px] font-mono" style={{ color: "#6B7280" }}>{doMes.length} lançamentos</span>
-          </div>
-        </div>
-
-        {/* Resumo por categoria */}
-        {porCategoria.length > 0 && (
-          <div className="mb-7">
-            <p className="text-[11px] tracking-[0.2em] uppercase mb-3" style={{ color: "#6B7280" }}>Por categoria</p>
-            <div className="space-y-2.5">
-              {porCategoria.map(([cat, valor]) => (
-                <div key={cat} className="flex items-center gap-3">
-                  <span className="text-xs w-24 shrink-0 truncate" style={{ color: "#C7CAD1" }}>{cat}</span>
-                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(valor / maiorCategoria) * 100}%`, background: corCategoria(cat) }}
-                    />
-                  </div>
-                  <span className="text-xs font-mono w-20 text-right shrink-0" style={{ color: "#8A93A6" }}>{formatoMoeda(valor)}</span>
+        {/* ===== ABA HOME ===== */}
+        {aba === "home" && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold"
+                  style={{ background: "#EDE9FE", color: "#7C3AED" }}
+                >
+                  {iniciais(nome)}
                 </div>
+                <div>
+                  <p className="text-xs" style={{ color: "#9691A4" }}>Olá, {nome ? nome.split(" ")[0] : "tudo bem"}!</p>
+                  <p className="text-sm font-semibold" style={{ color: "#1E1B2E" }}>Bem-vindo(a) de volta</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cartão de saldo */}
+            <div
+              className="rounded-3xl p-6 mb-6 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)" }}
+            >
+              <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+              <div className="absolute -right-2 bottom-2 w-16 h-16 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+              <div className="flex items-center justify-between mb-6 relative">
+                <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1 opacity-80 hover:opacity-100">
+                  <ChevronLeft size={18} color="#fff" />
+                </button>
+                <span className="text-xs tracking-wide font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {MESES_LONGOS[mes]} {ano}
+                </span>
+                <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1 opacity-80 hover:opacity-100">
+                  <ChevronRight size={18} color="#fff" />
+                </button>
+              </div>
+
+              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.7)" }}>Total gasto no mês</p>
+              <p className="text-4xl font-extrabold text-white mb-1">{formatoMoeda(total)}</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>{doMes.length} lançamentos</p>
+            </div>
+
+            {/* Ações rápidas */}
+            <div className="flex justify-between mb-8 px-1">
+              {[
+                { label: "Adicionar", icone: Plus, acao: abrirModal },
+                { label: "Cartões", icone: CreditCard, acao: () => setAba("card") },
+                { label: "Stat", icone: PieChartIcon, acao: () => setAba("stat") },
+                { label: "Moeda", icone: Wallet, acao: () => setAba("profile") },
+              ].map((item) => (
+                <button key={item.label} onClick={item.acao} className="flex flex-col items-center gap-2">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center shadow-sm"
+                    style={{ background: "#7C3AED" }}
+                  >
+                    <item.icone size={22} color="#fff" strokeWidth={2} />
+                  </div>
+                  <span className="text-[11px] font-medium" style={{ color: "#4B4759" }}>{item.label}</span>
+                </button>
               ))}
             </div>
-          </div>
+
+            {/* Transações recentes */}
+            <div>
+              <p className="text-sm font-bold mb-3" style={{ color: "#1E1B2E" }}>Lançamentos recentes</p>
+              {carregando ? (
+                <p className="text-sm" style={{ color: "#9691A4" }}>Carregando...</p>
+              ) : doMes.length === 0 ? (
+                <div className="rounded-2xl p-6 text-center bg-white">
+                  <p className="text-sm" style={{ color: "#9691A4" }}>Nenhum gasto lançado neste mês ainda.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {doMes.slice(0, 6).map((l) => (
+                    <div key={l.id} className="group flex items-center justify-between bg-white rounded-2xl p-3.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: `${corCategoria(l.categoria)}1A` }}
+                        >
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(l.categoria) }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: "#1E1B2E" }}>{l.descricao}</p>
+                          <p className="text-[11px]" style={{ color: "#9691A4" }}>
+                            {l.cartao ? `${l.cartao} · ` : ""}{String(new Date(l.data).getDate()).padStart(2, "0")}/{String(mes + 1).padStart(2, "0")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-bold" style={{ color: "#1E1B2E" }}>{formatoMoeda(l.valor)}</span>
+                        <button onClick={() => excluir(l.id)} className="opacity-0 group-hover:opacity-100 p-1">
+                          <Trash2 size={14} color="#EC4899" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
-        {/* Lista de lançamentos */}
-        <div>
-          <p className="text-[11px] tracking-[0.2em] uppercase mb-3" style={{ color: "#6B7280" }}>Lançamentos</p>
-
-          {carregando ? (
-            <p className="text-sm" style={{ color: "#6B7280" }}>Carregando...</p>
-          ) : doMes.length === 0 ? (
-            <div className="rounded-xl p-6 text-center" style={{ border: "1px dashed rgba(255,255,255,0.12)" }}>
-              <p className="text-sm" style={{ color: "#6B7280" }}>Nenhum gasto lançado neste mês ainda.</p>
+        {/* ===== ABA CARTÕES ===== */}
+        {aba === "card" && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>Meus cartões</h1>
+              <button onClick={adicionarCartao} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
+                <Plus size={18} color="#fff" />
+              </button>
             </div>
-          ) : (
-            <div className="space-y-1">
-              {doMes.map((l) => (
-                <div
-                  key={l.id}
-                  className="group flex items-center justify-between py-3 border-b"
-                  style={{ borderColor: "rgba(255,255,255,0.06)" }}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ background: corCategoria(l.categoria) }}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-sm truncate" style={{ color: "#F2EFE6" }}>{l.descricao}</p>
-                      <p className="text-[11px] font-mono" style={{ color: "#6B7280" }}>
-                        {String(new Date(l.data).getDate()).padStart(2, "0")}/{String(mes + 1).padStart(2, "0")} · {l.cartao} · {l.categoria}
-                      </p>
+
+            {cartoes.length === 0 ? (
+              <div className="rounded-2xl p-8 text-center bg-white">
+                <CreditCard size={28} color="#C4B5FD" className="mx-auto mb-3" />
+                <p className="text-sm mb-4" style={{ color: "#9691A4" }}>Você ainda não tem cartões cadastrados.</p>
+                <button onClick={adicionarCartao} className="text-sm font-semibold px-4 py-2 rounded-full text-white" style={{ background: "#7C3AED" }}>
+                  Adicionar cartão
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cartoes.map((c, i) => (
+                  <div
+                    key={c}
+                    className="rounded-2xl p-5 relative overflow-hidden"
+                    style={{
+                      background: i % 2 === 0
+                        ? "linear-gradient(135deg, #7C3AED, #5B21B6)"
+                        : "linear-gradient(135deg, #1E1B2E, #3F3B54)",
+                    }}
+                  >
+                    <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+                    <div className="flex items-center justify-between mb-8 relative">
+                      <p className="text-sm font-semibold text-white">{c}</p>
+                      <button onClick={() => removerCartao(c)} className="opacity-70 hover:opacity-100">
+                        <Trash2 size={15} color="#fff" />
+                      </button>
+                    </div>
+                    <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.65)" }}>Gasto em {MESES_LONGOS[mes]}</p>
+                    <p className="text-2xl font-extrabold text-white">{formatoMoeda(porCartao[c] || 0)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ===== ABA ESTATÍSTICA ===== */}
+        {aba === "stat" && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>Estatística</h1>
+              <div className="flex items-center gap-1 bg-white rounded-full px-2 py-1">
+                <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1">
+                  <ChevronLeft size={16} color="#7C3AED" />
+                </button>
+                <span className="text-xs font-semibold px-1" style={{ color: "#1E1B2E" }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
+                <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1">
+                  <ChevronRight size={16} color="#7C3AED" />
+                </button>
+              </div>
+            </div>
+
+            {porCategoria.length === 0 ? (
+              <div className="rounded-2xl p-8 text-center bg-white">
+                <p className="text-sm" style={{ color: "#9691A4" }}>Sem gastos neste mês pra mostrar no gráfico.</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white rounded-3xl p-6 mb-6">
+                  <p className="text-xs mb-4" style={{ color: "#9691A4" }}>Total de gastos</p>
+                  <div className="relative" style={{ height: 220 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={porCategoria.map(([nome, valor]) => ({ nome, valor }))}
+                          dataKey="valor"
+                          nameKey="nome"
+                          innerRadius={65}
+                          outerRadius={95}
+                          paddingAngle={3}
+                          strokeWidth={0}
+                        >
+                          {porCategoria.map(([nome]) => (
+                            <Cell key={nome} fill={corCategoria(nome)} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <p className="text-[11px]" style={{ color: "#9691A4" }}>Total</p>
+                      <p className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>{formatoMoeda(total)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-mono" style={{ color: "#F2EFE6" }}>{formatoMoeda(l.valor)}</span>
-                    <button
-                      onClick={() => excluir(l.id)}
-                      aria-label="Excluir lançamento"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1"
-                    >
-                      <Trash2 size={14} color="#C4694F" />
-                    </button>
-                  </div>
                 </div>
-              ))}
+
+                <p className="text-sm font-bold mb-3" style={{ color: "#1E1B2E" }}>Por categoria</p>
+                <div className="space-y-2">
+                  {porCategoria.map(([cat, valor]) => (
+                    <div key={cat} className="flex items-center justify-between bg-white rounded-2xl p-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(cat) }} />
+                        <span className="text-sm font-medium" style={{ color: "#1E1B2E" }}>{cat}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: `${corCategoria(cat)}1A`, color: corCategoria(cat) }}
+                        >
+                          {((valor / total) * 100).toFixed(0)}%
+                        </span>
+                        <span className="text-sm font-bold w-24 text-right" style={{ color: "#1E1B2E" }}>{formatoMoeda(valor)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {/* ===== ABA PERFIL ===== */}
+        {aba === "profile" && (
+          <>
+            <h1 className="text-xl font-extrabold mb-6" style={{ color: "#1E1B2E" }}>Perfil</h1>
+
+            <div className="flex flex-col items-center mb-8">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-3"
+                style={{ background: "#EDE9FE", color: "#7C3AED" }}
+              >
+                {iniciais(nome)}
+              </div>
             </div>
-          )}
-        </div>
+
+            <div className="bg-white rounded-2xl p-5 mb-4">
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Seu nome</label>
+              <input
+                value={nome}
+                onChange={(e) => salvarNome(e.target.value)}
+                placeholder="Digite seu nome"
+                className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
+                style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+              />
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 mb-4">
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Moeda</label>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {MOEDAS.map((m) => (
+                  <button
+                    key={m.codigo}
+                    onClick={() => mudarMoeda(m.codigo)}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-full"
+                    style={{
+                      background: moeda.codigo === m.codigo ? "#7C3AED" : "#F6F5FB",
+                      color: moeda.codigo === m.codigo ? "#fff" : "#4B4759",
+                    }}
+                  >
+                    {m.nome} ({m.codigo})
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "#1E1B2E" }}>Total de lançamentos</p>
+                <p className="text-[11px]" style={{ color: "#9691A4" }}>Em todos os meses</p>
+              </div>
+              <span className="text-lg font-extrabold" style={{ color: "#7C3AED" }}>{lancamentos.length}</span>
+            </div>
+          </>
+        )}
 
         {erro && (
-          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 text-xs px-4 py-2 rounded-full" style={{ background: "#C4694F", color: "#10141C" }}>
+          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 text-xs px-4 py-2 rounded-full text-white" style={{ background: "#EC4899" }}>
             {erro}
           </div>
         )}
+      </div>
 
-        {/* Botão flutuante */}
-        <button
-          onClick={abrirModal}
-          className="fixed bottom-8 right-1/2 translate-x-[calc(50%+0px)] sm:right-8 sm:translate-x-0 w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
-          style={{ background: "#C6A15B" }}
-          aria-label="Adicionar gasto"
-        >
-          <Plus size={24} color="#10141C" strokeWidth={2.5} />
-        </button>
+      {/* Barra de navegação inferior */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-md">
+        <div className="bg-white rounded-full shadow-lg flex items-center justify-around px-3 py-3">
+          {NAV.map((item) => {
+            const ativo = aba === item.id;
+            return (
+              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="p-2">
+                {ativo ? (
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
+                    <item.icone size={20} color="#fff" strokeWidth={2.2} />
+                  </div>
+                ) : (
+                  <item.icone size={22} color="#C4C1D1" strokeWidth={2} />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal de novo lançamento */}
       {modalAberto && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.6)" }}
+          style={{ background: "rgba(30,27,46,0.5)" }}
           onClick={() => setModalAberto(false)}
         >
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={salvarLancamento}
-            className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6"
-            style={{ background: "#1B2233", border: "1px solid rgba(198,161,91,0.2)" }}
+            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 bg-white"
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display text-lg" style={{ color: "#F2EFE6" }}>Novo gasto</h2>
+              <h2 className="text-lg font-extrabold" style={{ color: "#1E1B2E" }}>Novo gasto</h2>
               <button type="button" onClick={() => setModalAberto(false)} aria-label="Fechar">
-                <X size={18} color="#8A93A6" />
+                <X size={18} color="#9691A4" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Descrição</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Descrição</label>
                 <input
                   autoFocus
                   value={form.descricao}
                   onChange={(e) => setForm({ ...form, descricao: e.target.value })}
                   placeholder="Ex: Supermercado"
                   className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                  style={{ borderColor: "rgba(255,255,255,0.15)", color: "#F2EFE6" }}
+                  style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
                 />
               </div>
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Valor ({moeda.codigo})</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Valor ({moeda.codigo})</label>
                   <input
                     inputMode="decimal"
                     value={form.valor}
                     onChange={(e) => setForm({ ...form, valor: e.target.value })}
                     placeholder="0,00"
-                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none font-mono"
-                    style={{ borderColor: "rgba(255,255,255,0.15)", color: "#F2EFE6" }}
+                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
+                    style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
                   />
                 </div>
                 <div className="w-20">
-                  <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Dia</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Dia</label>
                   <input
                     inputMode="numeric"
                     value={form.dia}
                     onChange={(e) => setForm({ ...form, dia: e.target.value.replace(/\D/g, "").slice(0, 2) })}
-                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none font-mono"
-                    style={{ borderColor: "rgba(255,255,255,0.15)", color: "#F2EFE6" }}
+                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
+                    style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Categoria</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Categoria</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {CATEGORIAS.map((c) => (
                     <button
                       type="button"
                       key={c.nome}
                       onClick={() => setForm({ ...form, categoria: c.nome })}
-                      className="text-xs px-3 py-1.5 rounded-full transition-all"
+                      className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
-                        background: form.categoria === c.nome ? c.cor : "transparent",
-                        border: `1px solid ${form.categoria === c.nome ? c.cor : "rgba(255,255,255,0.15)"}`,
-                        color: form.categoria === c.nome ? "#10141C" : "#C7CAD1",
+                        background: form.categoria === c.nome ? c.cor : "#F6F5FB",
+                        color: form.categoria === c.nome ? "#fff" : "#4B4759",
                       }}
                     >
                       {c.nome}
@@ -397,18 +604,17 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Cartão</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Cartão</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {cartoes.map((c) => (
                     <button
                       type="button"
                       key={c}
                       onClick={() => setForm({ ...form, cartao: c })}
-                      className="text-xs px-3 py-1.5 rounded-full transition-all"
+                      className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
-                        background: form.cartao === c ? "#C6A15B" : "transparent",
-                        border: `1px solid ${form.cartao === c ? "#C6A15B" : "rgba(255,255,255,0.15)"}`,
-                        color: form.cartao === c ? "#10141C" : "#C7CAD1",
+                        background: form.cartao === c ? "#7C3AED" : "#F6F5FB",
+                        color: form.cartao === c ? "#fff" : "#4B4759",
                       }}
                     >
                       {c}
@@ -416,16 +622,9 @@ export default function App() {
                   ))}
                   <button
                     type="button"
-                    onClick={() => {
-                      const nome = prompt("Nome do novo cartão:");
-                      if (nome && nome.trim() && !cartoes.includes(nome.trim())) {
-                        const lista = [...cartoes, nome.trim()];
-                        salvarCartoes(lista);
-                        setForm({ ...form, cartao: nome.trim() });
-                      }
-                    }}
-                    className="text-xs px-3 py-1.5 rounded-full"
-                    style={{ border: "1px dashed rgba(255,255,255,0.25)", color: "#8A93A6" }}
+                    onClick={adicionarCartao}
+                    className="text-xs font-medium px-3 py-1.5 rounded-full"
+                    style={{ border: "1px dashed #C4B5FD", color: "#7C3AED" }}
                   >
                     + novo
                   </button>
@@ -435,8 +634,8 @@ export default function App() {
 
             <button
               type="submit"
-              className="w-full mt-6 py-3 rounded-xl text-sm font-medium"
-              style={{ background: "#C6A15B", color: "#10141C" }}
+              className="w-full mt-6 py-3 rounded-xl text-sm font-bold text-white"
+              style={{ background: "#7C3AED" }}
             >
               Salvar gasto
             </button>
