@@ -3,18 +3,19 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
   Home, PieChart as PieChartIcon, User, Wallet, AlertTriangle, Sun, Moon,
+  UtensilsCrossed, Car, HeartPulse, Gamepad2, Repeat2, MoreHorizontal,
 } from "lucide-react";
 
 const MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
 const CATEGORIAS = [
-  { nome: "Alimentação", cor: "#7C3AED" },
-  { nome: "Transporte", cor: "#F59E0B" },
-  { nome: "Casa", cor: "#EC4899" },
-  { nome: "Saúde", cor: "#22C55E" },
-  { nome: "Lazer", cor: "#3B82F6" },
-  { nome: "Assinaturas", cor: "#F97316" },
-  { nome: "Outros", cor: "#94A3B8" },
+  { nome: "Alimentação", cor: "#7C3AED", icone: UtensilsCrossed },
+  { nome: "Transporte", cor: "#F59E0B", icone: Car },
+  { nome: "Casa", cor: "#EC4899", icone: Home },
+  { nome: "Saúde", cor: "#22C55E", icone: HeartPulse },
+  { nome: "Lazer", cor: "#3B82F6", icone: Gamepad2 },
+  { nome: "Assinaturas", cor: "#F97316", icone: Repeat2 },
+  { nome: "Outros", cor: "#94A3B8", icone: MoreHorizontal },
 ];
 
 const MOEDAS = [
@@ -27,6 +28,10 @@ const MOEDAS = [
 
 function corCategoria(nome) {
   return (CATEGORIAS.find((c) => c.nome === nome) || CATEGORIAS[CATEGORIAS.length - 1]).cor;
+}
+
+function iconeCategoria(nome) {
+  return (CATEGORIAS.find((c) => c.nome === nome) || CATEGORIAS[CATEGORIAS.length - 1]).icone;
 }
 
 function idNovo() {
@@ -357,7 +362,10 @@ export default function App() {
                           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                           style={{ background: `${corCategoria(l.categoria)}1A` }}
                         >
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(l.categoria) }} />
+                          {(() => {
+                            const Icone = iconeCategoria(l.categoria);
+                            return <Icone size={17} color={corCategoria(l.categoria)} strokeWidth={2} />;
+                          })()}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: T.text }}>{l.descricao}</p>
@@ -491,7 +499,15 @@ export default function App() {
                   {porCategoria.map(([cat, valor]) => (
                     <div key={cat} className="flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(cat) }} />
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: `${corCategoria(cat)}1A` }}
+                        >
+                          {(() => {
+                            const Icone = iconeCategoria(cat);
+                            return <Icone size={14} color={corCategoria(cat)} strokeWidth={2} />;
+                          })()}
+                        </div>
                         <span className="text-sm font-medium" style={{ color: T.text }}>{cat}</span>
                       </div>
                       <div className="flex items-center gap-3">
@@ -701,12 +717,13 @@ export default function App() {
                       type="button"
                       key={c.nome}
                       onClick={() => setForm({ ...form, categoria: c.nome })}
-                      className="text-xs font-medium px-3 py-1.5 rounded-full"
+                      className="text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5"
                       style={{
                         background: form.categoria === c.nome ? c.cor : T.track,
                         color: form.categoria === c.nome ? "#fff" : T.pillText,
                       }}
                     >
+                      <c.icone size={13} strokeWidth={2.2} />
                       {c.nome}
                     </button>
                   ))}
