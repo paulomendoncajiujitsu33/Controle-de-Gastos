@@ -286,6 +286,17 @@ export default function App() {
 
   const totalAno = useMemo(() => porMesDoAno.reduce((s, m) => s + m.valor, 0), [porMesDoAno]);
 
+  const porCategoriaAno = useMemo(() => {
+    const mapa = {};
+    lancamentos.forEach((l) => {
+      const d = new Date(l.data);
+      if (d.getFullYear() === ano) {
+        mapa[l.categoria] = (mapa[l.categoria] || 0) + l.valor;
+      }
+    });
+    return Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+  }, [lancamentos, ano]);
+
   function mudarMes(delta) {
     let novoMes = mes + delta;
     let novoAno = ano;
@@ -735,6 +746,7 @@ export default function App() {
               </>
               )
             ) : (
+              <>
               <div className="rounded-3xl p-6" style={{ background: T.card }}>
                 <p className="text-xs mb-1" style={{ color: T.textSecondary }}>Total no ano</p>
                 <p className="text-2xl font-extrabold mb-4" style={{ color: T.text }}>{formatoMoeda(totalAno)}</p>
@@ -786,6 +798,40 @@ export default function App() {
                   <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>Sem gastos registrados em {ano}.</p>
                 )}
               </div>
+
+              {porCategoriaAno.length > 0 && (
+                <>
+                  <p className="text-sm font-bold mb-3 mt-6" style={{ color: T.text }}>Por categoria</p>
+                  <div className="space-y-2">
+                    {porCategoriaAno.map(([cat, valor]) => (
+                      <div key={cat} className="flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                            style={{ background: `${corCategoria(cat)}1A` }}
+                          >
+                            {(() => {
+                              const Icone = iconeCategoria(cat);
+                              return <Icone size={14} color={corCategoria(cat)} strokeWidth={2} />;
+                            })()}
+                          </div>
+                          <span className="text-sm font-medium" style={{ color: T.text }}>{cat}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: `${corCategoria(cat)}1A`, color: corCategoria(cat) }}
+                          >
+                            {((valor / totalAno) * 100).toFixed(0)}%
+                          </span>
+                          <span className="text-sm font-bold w-24 text-right" style={{ color: T.text }}>{formatoMoeda(valor)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
             )}
           </>
         )}
