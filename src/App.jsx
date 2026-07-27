@@ -737,7 +737,7 @@ export default function App() {
       </div>
 
       {/* Barra de navegação inferior */}
-      <div className="fixed left-0 right-0" style={{ bottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}>
+      <div className="fixed left-0 right-0" style={{ bottom: "calc(env(safe-area-inset-bottom) + 0.25rem)" }}>
         <div className="max-w-md mx-auto px-5">
         <div className="rounded-3xl shadow-lg flex items-center justify-between px-4 py-2.5" style={{ background: T.card }}>
           {NAV.slice(0, 2).map((item) => {
