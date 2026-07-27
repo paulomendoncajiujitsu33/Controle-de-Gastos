@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
-  Home, PieChart as PieChartIcon, User, Wallet,
+  Home, PieChart as PieChartIcon, User, Wallet, AlertTriangle,
 } from "lucide-react";
 
 const MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -43,6 +43,7 @@ const CHAVE_LANCAMENTOS = "controle-gastos:lancamentos";
 const CHAVE_CARTOES = "controle-gastos:cartoes";
 const CHAVE_MOEDA = "controle-gastos:moeda";
 const CHAVE_PERFIL = "controle-gastos:perfil";
+const CHAVE_SALARIO = "controle-gastos:salario";
 
 export default function App() {
   const hoje = new Date();
@@ -53,6 +54,7 @@ export default function App() {
   const [cartoes, setCartoes] = useState([]);
   const [moeda, setMoeda] = useState(MOEDAS[0]);
   const [nome, setNome] = useState("");
+  const [salario, setSalario] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -89,6 +91,10 @@ export default function App() {
       const s = localStorage.getItem(CHAVE_PERFIL);
       if (s) setNome(s);
     } catch (e) {}
+    try {
+      const s = localStorage.getItem(CHAVE_SALARIO);
+      if (s) setSalario(s);
+    } catch (e) {}
     setCarregando(false);
   }, []);
 
@@ -122,6 +128,13 @@ export default function App() {
     setNome(valor);
     try {
       localStorage.setItem(CHAVE_PERFIL, valor);
+    } catch (e) {}
+  }
+
+  function salvarSalario(valor) {
+    setSalario(valor);
+    try {
+      localStorage.setItem(CHAVE_SALARIO, valor);
     } catch (e) {}
   }
 
@@ -264,6 +277,21 @@ export default function App() {
               <p className="text-4xl font-extrabold text-white mb-1">{formatoMoeda(total)}</p>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>{doMes.length} lançamentos</p>
             </div>
+
+            {salario && parseFloat(salario.replace(",", ".")) > 0 && total > parseFloat(salario.replace(",", ".")) && (
+              <div
+                className="rounded-2xl p-4 mb-6 flex items-start gap-3"
+                style={{ background: "#FEE2E2", border: "1px solid #FCA5A5" }}
+              >
+                <AlertTriangle size={20} color="#DC2626" className="shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Você ultrapassou o limite de gastos</p>
+                  <p className="text-xs mt-0.5" style={{ color: "#B91C1C" }}>
+                    Gasto de {formatoMoeda(total)} contra um salário de {formatoMoeda(parseFloat(salario.replace(",", ".")))}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Ações rápidas */}
             <div className="flex justify-between mb-8 px-1">
@@ -480,6 +508,19 @@ export default function App() {
                 className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
                 style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
               />
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 mb-4">
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Salário mensal ({moeda.codigo})</label>
+              <input
+                inputMode="decimal"
+                value={salario}
+                onChange={(e) => salvarSalario(e.target.value)}
+                placeholder="Ex: 5000,00"
+                className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
+                style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+              />
+              <p className="text-[11px] mt-2" style={{ color: "#9691A4" }}>Você recebe um aviso quando os gastos do mês passarem esse valor.</p>
             </div>
 
             <div className="bg-white rounded-2xl p-5 mb-4">
