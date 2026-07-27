@@ -265,6 +265,25 @@ export default function App() {
     return MESES_LONGOS.map((nomeMes, i) => ({ mes: nomeMes.slice(0, 3), valor: totais[i] }));
   }, [lancamentos, ano]);
 
+  const porMesECategoria = useMemo(() => {
+    const base = MESES_LONGOS.map((nomeMes) => {
+      const linha = { mes: nomeMes.slice(0, 3) };
+      CATEGORIAS.forEach((c) => { linha[c.nome] = 0; });
+      return linha;
+    });
+    lancamentos.forEach((l) => {
+      const d = new Date(l.data);
+      if (d.getFullYear() === ano) {
+        base[d.getMonth()][l.categoria] = (base[d.getMonth()][l.categoria] || 0) + l.valor;
+      }
+    });
+    return base;
+  }, [lancamentos, ano]);
+
+  const categoriasAtivasAno = useMemo(() => {
+    return CATEGORIAS.filter((c) => porMesECategoria.some((m) => m[c.nome] > 0));
+  }, [porMesECategoria]);
+
   const totalAno = useMemo(() => porMesDoAno.reduce((s, m) => s + m.valor, 0), [porMesDoAno]);
 
   function mudarMes(delta) {
@@ -721,7 +740,7 @@ export default function App() {
                 <p className="text-2xl font-extrabold mb-4" style={{ color: T.text }}>{formatoMoeda(totalAno)}</p>
                 <div style={{ height: 240 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={porMesDoAno} margin={{ top: 5, right: 8, left: 8, bottom: 0 }}>
+                    <LineChart data={porMesECategoria} margin={{ top: 5, right: 8, left: 8, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={T.track} vertical={false} />
                       <XAxis
                         dataKey="mes"
@@ -735,12 +754,34 @@ export default function App() {
                         formatter={(valor) => formatoMoeda(valor)}
                         contentStyle={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, fontSize: 12 }}
                         labelStyle={{ color: T.text }}
-                        itemStyle={{ color: "#7C3AED" }}
                       />
-                      <Line type="monotone" dataKey="valor" stroke="#7C3AED" strokeWidth={3} dot={{ r: 3, fill: "#7C3AED" }} activeDot={{ r: 5 }} />
+                      {categoriasAtivasAno.map((c) => (
+                        <Line
+                          key={c.nome}
+                          type="monotone"
+                          dataKey={c.nome}
+                          name={c.nome}
+                          stroke={c.cor}
+                          strokeWidth={2.5}
+                          dot={{ r: 2.5, fill: c.cor }}
+                          activeDot={{ r: 5 }}
+                        />
+                      ))}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+
+                {categoriasAtivasAno.length > 0 && (
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4">
+                    {categoriasAtivasAno.map((c) => (
+                      <div key={c.nome} className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: c.cor }} />
+                        <span className="text-[11px]" style={{ color: T.textSecondary }}>{c.nome}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {totalAno === 0 && (
                   <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>Sem gastos registrados em {ano}.</p>
                 )}
