@@ -6,8 +6,6 @@ import {
   UtensilsCrossed, Car, HeartPulse, Gamepad2, Repeat2, MoreHorizontal,
 } from "lucide-react";
 
-const MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
 const CATEGORIAS = [
   { nome: "Alimentação", cor: "#7C3AED", icone: UtensilsCrossed },
   { nome: "Transporte", cor: "#F59E0B", icone: Car },
@@ -38,6 +36,134 @@ const CORES_CARTAO = [
   { nome: "Verde", valor: "#16A34A" },
   { nome: "Roxo", valor: "#7C3AED" },
 ];
+
+const IDIOMAS = [
+  { codigo: "pt-BR", nome: "Português" },
+  { codigo: "en", nome: "English" },
+  { codigo: "es", nome: "Español" },
+];
+
+const MESES_POR_IDIOMA = {
+  "pt-BR": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+  "en": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  "es": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+};
+
+const CATEGORIA_TRADUZIDA = {
+  "pt-BR": { "Alimentação": "Alimentação", "Transporte": "Transporte", "Casa": "Casa", "Saúde": "Saúde", "Lazer": "Lazer", "Assinaturas": "Assinaturas", "Outros": "Outros" },
+  "en": { "Alimentação": "Food", "Transporte": "Transport", "Casa": "Home", "Saúde": "Health", "Lazer": "Leisure", "Assinaturas": "Subscriptions", "Outros": "Other" },
+  "es": { "Alimentação": "Comida", "Transporte": "Transporte", "Casa": "Casa", "Saúde": "Salud", "Lazer": "Ocio", "Assinaturas": "Suscripciones", "Outros": "Otros" },
+};
+
+const MOEDA_TRADUZIDA = {
+  "pt-BR": { "Real": "Real", "Dólar": "Dólar", "Euro": "Euro", "Dirham": "Dirham", "Libra": "Libra" },
+  "en": { "Real": "Real", "Dólar": "Dollar", "Euro": "Euro", "Dirham": "Dirham", "Libra": "Pound" },
+  "es": { "Real": "Real", "Dólar": "Dólar", "Euro": "Euro", "Dirham": "Dirham", "Libra": "Libra" },
+};
+
+const CORCARTAO_TRADUZIDA = {
+  "pt-BR": { "Preto": "Preto", "Branco": "Branco", "Vermelho": "Vermelho", "Azul": "Azul", "Dourado": "Dourado", "Prata": "Prata", "Verde": "Verde", "Roxo": "Roxo" },
+  "en": { "Preto": "Black", "Branco": "White", "Vermelho": "Red", "Azul": "Blue", "Dourado": "Gold", "Prata": "Silver", "Verde": "Green", "Roxo": "Purple" },
+  "es": { "Preto": "Negro", "Branco": "Blanco", "Vermelho": "Rojo", "Azul": "Azul", "Dourado": "Dorado", "Prata": "Plata", "Verde": "Verde", "Roxo": "Morado" },
+};
+
+const NAV_LABEL_KEY = { home: "navHome", card: "navCartoes", stat: "navStat", profile: "navPerfil" };
+
+const TX = {
+  "pt-BR": {
+    ola: "Olá", tudoBem: "tudo bem", boasVindas: "Bem-vindo(a) de volta",
+    totalGastoMes: "Total gasto no mês", lancamentos: "lançamentos",
+    limiteUltrapassadoTitulo: "Você ultrapassou o limite de gastos",
+    limiteUltrapassadoTexto: "Gasto de {gasto} contra um salário de {salario}",
+    acaoAdicionar: "Adicionar", acaoCartoes: "Cartões", acaoStat: "Stat", acaoMoeda: "Moeda",
+    lancamentosRecentes: "Lançamentos recentes", carregando: "Carregando...",
+    semGastosMes: "Nenhum gasto lançado neste mês ainda.",
+    meusCartoes: "Meus cartões", semCartoes: "Você ainda não tem cartões cadastrados.",
+    adicionarCartao: "Adicionar cartão", gastoEm: "Gasto em",
+    estatistica: "Estatística", mensal: "Mensal", anual: "Anual",
+    semGastosGrafico: "Sem gastos neste mês pra mostrar no gráfico.",
+    totalDeGastos: "Total de gastos", total: "Total", porCategoria: "Por categoria",
+    totalNoAno: "Total no ano", semGastosAno: "Sem gastos registrados em {ano}.",
+    perfil: "Perfil", seuNome: "Seu nome", digiteSeuNome: "Digite seu nome",
+    salarioMensal: "Salário mensal", exSalario: "Ex: 5000,00",
+    avisoSalario: "Você recebe um aviso quando os gastos do mês passarem esse valor.",
+    moeda: "Moeda", idioma: "Idioma",
+    totalLancamentos: "Total de lançamentos", emTodosOsMeses: "Em todos os meses",
+    novoGasto: "Novo gasto", descricao: "Descrição", exSupermercado: "Ex: Supermercado",
+    valor: "Valor", dia: "Dia", categoria: "Categoria", cartao: "Cartão",
+    maisNovo: "+ novo", salvarGasto: "Salvar gasto",
+    editarCartao: "Editar cartão", novoCartao: "Novo cartão",
+    nomeDoCartao: "Nome do cartão", exNubank: "Ex: Nubank", bandeira: "Bandeira",
+    maisPersonalizada: "+ personalizada", cor: "Cor", salvarAlteracoes: "Salvar alterações",
+    escolherCorPersonalizada: "Escolher cor personalizada",
+    promptNomeCartao: "Nome do novo cartão:", promptNomeBandeira: "Nome da bandeira:",
+    confirmRemoverCartao: 'Remover o cartão "{nome}"? Os lançamentos feitos nele continuam salvos.',
+    erroSalvar: "Não consegui salvar agora. Tenta de novo em instantes.",
+    navHome: "Home", navCartoes: "Cartões", navStat: "Stat", navPerfil: "Perfil",
+  },
+  "en": {
+    ola: "Hi", tudoBem: "there", boasVindas: "Welcome back",
+    totalGastoMes: "Total spent this month", lancamentos: "entries",
+    limiteUltrapassadoTitulo: "You've gone over your spending limit",
+    limiteUltrapassadoTexto: "Spent {gasto} against a salary of {salario}",
+    acaoAdicionar: "Add", acaoCartoes: "Cards", acaoStat: "Stats", acaoMoeda: "Currency",
+    lancamentosRecentes: "Recent entries", carregando: "Loading...",
+    semGastosMes: "No expenses logged this month yet.",
+    meusCartoes: "My cards", semCartoes: "You don't have any cards yet.",
+    adicionarCartao: "Add card", gastoEm: "Spent in",
+    estatistica: "Statistics", mensal: "Monthly", anual: "Yearly",
+    semGastosGrafico: "No expenses this month to show in the chart.",
+    totalDeGastos: "Total expenses", total: "Total", porCategoria: "By category",
+    totalNoAno: "Total this year", semGastosAno: "No expenses recorded in {ano}.",
+    perfil: "Profile", seuNome: "Your name", digiteSeuNome: "Enter your name",
+    salarioMensal: "Monthly salary", exSalario: "E.g.: 5000.00",
+    avisoSalario: "You'll get a warning when this month's expenses go over this amount.",
+    moeda: "Currency", idioma: "Language",
+    totalLancamentos: "Total entries", emTodosOsMeses: "Across all months",
+    novoGasto: "New expense", descricao: "Description", exSupermercado: "E.g.: Groceries",
+    valor: "Amount", dia: "Day", categoria: "Category", cartao: "Card",
+    maisNovo: "+ new", salvarGasto: "Save expense",
+    editarCartao: "Edit card", novoCartao: "New card",
+    nomeDoCartao: "Card name", exNubank: "E.g.: Chase", bandeira: "Brand",
+    maisPersonalizada: "+ custom", cor: "Color", salvarAlteracoes: "Save changes",
+    escolherCorPersonalizada: "Choose custom color",
+    promptNomeCartao: "New card name:", promptNomeBandeira: "Brand name:",
+    confirmRemoverCartao: 'Remove the card "{nome}"? Entries made on it will stay saved.',
+    erroSalvar: "Couldn't save right now. Try again in a moment.",
+    navHome: "Home", navCartoes: "Cards", navStat: "Stats", navPerfil: "Profile",
+  },
+  "es": {
+    ola: "Hola", tudoBem: "qué tal", boasVindas: "Bienvenido(a) de nuevo",
+    totalGastoMes: "Total gastado este mes", lancamentos: "movimientos",
+    limiteUltrapassadoTitulo: "Superaste tu límite de gastos",
+    limiteUltrapassadoTexto: "Gastaste {gasto} de un salario de {salario}",
+    acaoAdicionar: "Agregar", acaoCartoes: "Tarjetas", acaoStat: "Stat", acaoMoeda: "Moneda",
+    lancamentosRecentes: "Movimientos recientes", carregando: "Cargando...",
+    semGastosMes: "Aún no hay gastos registrados este mes.",
+    meusCartoes: "Mis tarjetas", semCartoes: "Todavía no tienes tarjetas registradas.",
+    adicionarCartao: "Agregar tarjeta", gastoEm: "Gastado en",
+    estatistica: "Estadística", mensal: "Mensual", anual: "Anual",
+    semGastosGrafico: "Sin gastos este mes para mostrar en el gráfico.",
+    totalDeGastos: "Total de gastos", total: "Total", porCategoria: "Por categoría",
+    totalNoAno: "Total del año", semGastosAno: "Sin gastos registrados en {ano}.",
+    perfil: "Perfil", seuNome: "Tu nombre", digiteSeuNome: "Escribe tu nombre",
+    salarioMensal: "Salario mensual", exSalario: "Ej: 5000,00",
+    avisoSalario: "Recibirás un aviso cuando los gastos del mes superen este valor.",
+    moeda: "Moneda", idioma: "Idioma",
+    totalLancamentos: "Total de movimientos", emTodosOsMeses: "En todos los meses",
+    novoGasto: "Nuevo gasto", descricao: "Descripción", exSupermercado: "Ej: Supermercado",
+    valor: "Monto", dia: "Día", categoria: "Categoría", cartao: "Tarjeta",
+    maisNovo: "+ nueva", salvarGasto: "Guardar gasto",
+    editarCartao: "Editar tarjeta", novoCartao: "Nueva tarjeta",
+    nomeDoCartao: "Nombre de la tarjeta", exNubank: "Ej: BBVA", bandeira: "Marca",
+    maisPersonalizada: "+ personalizada", cor: "Color", salvarAlteracoes: "Guardar cambios",
+    escolherCorPersonalizada: "Elegir color personalizado",
+    promptNomeCartao: "Nombre de la nueva tarjeta:", promptNomeBandeira: "Nombre de la marca:",
+    confirmRemoverCartao: 'Quitar la tarjeta "{nome}"? Los movimientos hechos con ella siguen guardados.',
+    erroSalvar: "No pude guardar ahora. Intenta de nuevo en un momento.",
+    navHome: "Home", navCartoes: "Tarjetas", navStat: "Stat", navPerfil: "Perfil",
+  },
+};
 
 function escurecerCor(hex, quantidade = 40) {
   const num = parseInt(hex.replace("#", ""), 16);
@@ -81,6 +207,7 @@ const CHAVE_MOEDA = "controle-gastos:moeda";
 const CHAVE_PERFIL = "controle-gastos:perfil";
 const CHAVE_SALARIO = "controle-gastos:salario";
 const CHAVE_TEMA = "controle-gastos:tema";
+const CHAVE_IDIOMA = "controle-gastos:idioma";
 
 export default function App() {
   const hoje = new Date();
@@ -99,6 +226,7 @@ export default function App() {
   const [nome, setNome] = useState("");
   const [salario, setSalario] = useState("");
   const [escuro, setEscuro] = useState(false);
+  const [idioma, setIdioma] = useState("pt-BR");
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -113,6 +241,44 @@ export default function App() {
 
   function formatoMoeda(v) {
     return v.toLocaleString(moeda.locale, { style: "currency", currency: moeda.codigo });
+  }
+
+  function t(chave, vars) {
+    let texto = (TX[idioma] && TX[idioma][chave]) || TX["pt-BR"][chave] || chave;
+    if (vars) {
+      Object.keys(vars).forEach((k) => {
+        texto = texto.replace(`{${k}}`, vars[k]);
+      });
+    }
+    return texto;
+  }
+
+  function tMes(indice, curto) {
+    const nomeMes = (MESES_POR_IDIOMA[idioma] || MESES_POR_IDIOMA["pt-BR"])[indice];
+    return curto ? nomeMes.slice(0, 3) : nomeMes;
+  }
+
+  function tCategoria(nomeCategoria) {
+    return (CATEGORIA_TRADUZIDA[idioma] && CATEGORIA_TRADUZIDA[idioma][nomeCategoria]) || nomeCategoria;
+  }
+
+  function tMoedaNome(nomeMoeda) {
+    return (MOEDA_TRADUZIDA[idioma] && MOEDA_TRADUZIDA[idioma][nomeMoeda]) || nomeMoeda;
+  }
+
+  function tCorCartao(nomeCor) {
+    return (CORCARTAO_TRADUZIDA[idioma] && CORCARTAO_TRADUZIDA[idioma][nomeCor]) || nomeCor;
+  }
+
+  function navLabel(id) {
+    return t(NAV_LABEL_KEY[id]);
+  }
+
+  function salvarIdioma(codigo) {
+    setIdioma(codigo);
+    try {
+      localStorage.setItem(CHAVE_IDIOMA, codigo);
+    } catch (e) {}
   }
 
   useEffect(() => {
@@ -146,6 +312,10 @@ export default function App() {
     try {
       const s = localStorage.getItem(CHAVE_TEMA);
       if (s) setEscuro(s === "1");
+    } catch (e) {}
+    try {
+      const s = localStorage.getItem(CHAVE_IDIOMA);
+      if (s) setIdioma(s);
     } catch (e) {}
     setCarregando(false);
   }, []);
@@ -186,7 +356,7 @@ export default function App() {
     try {
       localStorage.setItem(CHAVE_LANCAMENTOS, JSON.stringify(lista));
     } catch (e) {
-      setErro("Não consegui salvar agora. Tenta de novo em instantes.");
+      setErro(t("erroSalvar"));
       setTimeout(() => setErro(""), 3000);
     }
   }
@@ -262,11 +432,11 @@ export default function App() {
         totais[d.getMonth()] += l.valor;
       }
     });
-    return MESES_LONGOS.map((nomeMes, i) => ({ mes: nomeMes.slice(0, 3), valor: totais[i] }));
-  }, [lancamentos, ano]);
+    return (MESES_POR_IDIOMA[idioma] || MESES_POR_IDIOMA["pt-BR"]).map((nomeMes, i) => ({ mes: nomeMes.slice(0, 3), valor: totais[i] }));
+  }, [lancamentos, ano, idioma]);
 
   const porMesECategoria = useMemo(() => {
-    const base = MESES_LONGOS.map((nomeMes) => {
+    const base = (MESES_POR_IDIOMA[idioma] || MESES_POR_IDIOMA["pt-BR"]).map((nomeMes) => {
       const linha = { mes: nomeMes.slice(0, 3) };
       CATEGORIAS.forEach((c) => { linha[c.nome] = 0; });
       return linha;
@@ -278,7 +448,7 @@ export default function App() {
       }
     });
     return base;
-  }, [lancamentos, ano]);
+  }, [lancamentos, ano, idioma]);
 
   const categoriasAtivasAno = useMemo(() => {
     return CATEGORIAS.filter((c) => porMesECategoria.some((m) => m[c.nome] > 0));
@@ -344,7 +514,7 @@ export default function App() {
   }
 
   function adicionarCartao() {
-    const n = prompt("Nome do novo cartão:");
+    const n = prompt(t("promptNomeCartao"));
     if (n && n.trim() && !cartoes.includes(n.trim())) {
       salvarCartoes([...cartoes, n.trim()]);
     }
@@ -389,7 +559,7 @@ export default function App() {
   }
 
   function removerCartao(c) {
-    if (confirm(`Remover o cartão "${c}"? Os lançamentos feitos nele continuam salvos.`)) {
+    if (confirm(t("confirmRemoverCartao", { nome: c }))) {
       salvarCartoes(cartoes.filter((x) => x !== c));
       const novoInfo = { ...cartaoInfo };
       delete novoInfo[c];
@@ -398,10 +568,10 @@ export default function App() {
   }
 
   const NAV = [
-    { id: "home", label: "Home", icone: Home },
-    { id: "card", label: "Cartões", icone: CreditCard },
-    { id: "stat", label: "Stat", icone: PieChartIcon },
-    { id: "profile", label: "Perfil", icone: User },
+    { id: "home", icone: Home },
+    { id: "card", icone: CreditCard },
+    { id: "stat", icone: PieChartIcon },
+    { id: "profile", icone: User },
   ];
 
   const T = {
@@ -452,8 +622,8 @@ export default function App() {
                   {iniciais(nome)}
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: T.textSecondary }}>Olá, {nome ? nome.split(" ")[0] : "tudo bem"}!</p>
-                  <p className="text-sm font-semibold" style={{ color: T.text }}>Bem-vindo(a) de volta</p>
+                  <p className="text-xs" style={{ color: T.textSecondary }}>{t("ola")}, {nome ? nome.split(" ")[0] : t("tudoBem")}!</p>
+                  <p className="text-sm font-semibold" style={{ color: T.text }}>{t("boasVindas")}</p>
                 </div>
               </div>
             </div>
@@ -471,16 +641,16 @@ export default function App() {
                   <ChevronLeft size={18} color="#fff" />
                 </button>
                 <span className="text-xs tracking-wide font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {MESES_LONGOS[mes]} {ano}
+                  {tMes(mes)} {ano}
                 </span>
                 <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1 opacity-80 hover:opacity-100">
                   <ChevronRight size={18} color="#fff" />
                 </button>
               </div>
 
-              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.7)" }}>Total gasto no mês</p>
+              <p className="text-xs mb-1" style={{ color: "rgba(255,255,255,0.7)" }}>{t("totalGastoMes")}</p>
               <p className="text-4xl font-extrabold text-white mb-1">{formatoMoeda(total)}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>{doMes.length} lançamentos</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.65)" }}>{doMes.length} {t("lancamentos")}</p>
             </div>
 
             {salario && parseFloat(salario.replace(",", ".")) > 0 && total > parseFloat(salario.replace(",", ".")) && (
@@ -490,9 +660,9 @@ export default function App() {
               >
                 <AlertTriangle size={32} color="#fff" className="shrink-0" />
                 <div>
-                  <p className="text-sm font-bold text-white">Você ultrapassou o limite de gastos</p>
+                  <p className="text-sm font-bold text-white">{t("limiteUltrapassadoTitulo")}</p>
                   <p className="text-xs mt-0.5 text-white" style={{ opacity: 0.9 }}>
-                    Gasto de {formatoMoeda(total)} contra um salário de {formatoMoeda(parseFloat(salario.replace(",", ".")))}
+                    {t("limiteUltrapassadoTexto", { gasto: formatoMoeda(total), salario: formatoMoeda(parseFloat(salario.replace(",", "."))) })}
                   </p>
                 </div>
               </div>
@@ -501,10 +671,10 @@ export default function App() {
             {/* Ações rápidas */}
             <div className="flex justify-between mb-8 px-1">
               {[
-                { label: "Adicionar", icone: Plus, acao: abrirModal },
-                { label: "Cartões", icone: CreditCard, acao: () => setAba("card") },
-                { label: "Stat", icone: PieChartIcon, acao: () => setAba("stat") },
-                { label: "Moeda", icone: Wallet, acao: () => setAba("profile") },
+                { label: t("acaoAdicionar"), icone: Plus, acao: abrirModal },
+                { label: t("acaoCartoes"), icone: CreditCard, acao: () => setAba("card") },
+                { label: t("acaoStat"), icone: PieChartIcon, acao: () => setAba("stat") },
+                { label: t("acaoMoeda"), icone: Wallet, acao: () => setAba("profile") },
               ].map((item) => (
                 <button key={item.label} onClick={item.acao} className="flex flex-col items-center gap-2">
                   <div
@@ -520,12 +690,12 @@ export default function App() {
 
             {/* Transações recentes */}
             <div>
-              <p className="text-sm font-bold mb-3" style={{ color: T.text }}>Lançamentos recentes</p>
+              <p className="text-sm font-bold mb-3" style={{ color: T.text }}>{t("lancamentosRecentes")}</p>
               {carregando ? (
-                <p className="text-sm" style={{ color: T.textSecondary }}>Carregando...</p>
+                <p className="text-sm" style={{ color: T.textSecondary }}>{t("carregando")}</p>
               ) : doMes.length === 0 ? (
                 <div className="rounded-2xl p-6 text-center" style={{ background: T.card }}>
-                  <p className="text-sm" style={{ color: T.textSecondary }}>Nenhum gasto lançado neste mês ainda.</p>
+                  <p className="text-sm" style={{ color: T.textSecondary }}>{t("semGastosMes")}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -566,7 +736,7 @@ export default function App() {
         {aba === "card" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Meus cartões</h1>
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>{t("meusCartoes")}</h1>
               <button onClick={() => abrirModalCartao(null)} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
                 <Plus size={18} color="#fff" />
               </button>
@@ -575,9 +745,9 @@ export default function App() {
             {cartoes.length === 0 ? (
               <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
                 <CreditCard size={28} color="#C4B5FD" className="mx-auto mb-3" />
-                <p className="text-sm mb-4" style={{ color: T.textSecondary }}>Você ainda não tem cartões cadastrados.</p>
+                <p className="text-sm mb-4" style={{ color: T.textSecondary }}>{t("semCartoes")}</p>
                 <button onClick={() => abrirModalCartao(null)} className="text-sm font-semibold px-4 py-2 rounded-full text-white" style={{ background: "#7C3AED" }}>
-                  Adicionar cartão
+                  {t("adicionarCartao")}
                 </button>
               </div>
             ) : (
@@ -606,7 +776,7 @@ export default function App() {
                           <Trash2 size={15} color={corTexto} />
                         </button>
                       </div>
-                      <p className="text-[11px] mb-1" style={{ color: corTextoSuave }}>Gasto em {MESES_LONGOS[mes]}</p>
+                      <p className="text-[11px] mb-1" style={{ color: corTextoSuave }}>{t("gastoEm")} {tMes(mes)}</p>
                       <div className="flex items-end justify-between">
                         <p className="text-2xl font-extrabold" style={{ color: corTexto }}>{formatoMoeda(porCartao[c] || 0)}</p>
                         <span className="text-xs font-black italic tracking-wide opacity-90" style={{ color: corTexto }}>{bandeira.toUpperCase()}</span>
@@ -623,13 +793,13 @@ export default function App() {
         {aba === "stat" && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Estatística</h1>
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>{t("estatistica")}</h1>
               {visaoStat === "mensal" ? (
                 <div className="flex items-center gap-1 rounded-full px-2 py-1" style={{ background: T.card }}>
                   <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1">
                     <ChevronLeft size={16} color="#7C3AED" />
                   </button>
-                  <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
+                  <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{tMes(mes, true)} {ano}</span>
                   <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1">
                     <ChevronRight size={16} color="#7C3AED" />
                   </button>
@@ -656,7 +826,7 @@ export default function App() {
                   color: visaoStat === "mensal" ? "#fff" : T.pillText,
                 }}
               >
-                Mensal
+                {t("mensal")}
               </button>
               <button
                 onClick={() => setVisaoStat("anual")}
@@ -666,19 +836,19 @@ export default function App() {
                   color: visaoStat === "anual" ? "#fff" : T.pillText,
                 }}
               >
-                Anual
+                {t("anual")}
               </button>
             </div>
 
             {visaoStat === "mensal" ? (
               porCategoria.length === 0 ? (
               <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
-                <p className="text-sm" style={{ color: T.textSecondary }}>Sem gastos neste mês pra mostrar no gráfico.</p>
+                <p className="text-sm" style={{ color: T.textSecondary }}>{t("semGastosGrafico")}</p>
               </div>
             ) : (
               <>
                 <div className="rounded-3xl p-6 mb-6" style={{ background: T.card }}>
-                  <p className="text-xs mb-4" style={{ color: T.textSecondary }}>Total de gastos</p>
+                  <p className="text-xs mb-4" style={{ color: T.textSecondary }}>{t("totalDeGastos")}</p>
                   <div className="relative" style={{ height: 220 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -709,13 +879,13 @@ export default function App() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <p className="text-[11px]" style={{ color: T.textSecondary }}>Total</p>
+                      <p className="text-[11px]" style={{ color: T.textSecondary }}>{t("total")}</p>
                       <p className="text-xl font-extrabold" style={{ color: T.text }}>{formatoMoeda(total)}</p>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm font-bold mb-3" style={{ color: T.text }}>Por categoria</p>
+                <p className="text-sm font-bold mb-3" style={{ color: T.text }}>{t("porCategoria")}</p>
                 <div className="space-y-2">
                   {porCategoria.map(([cat, valor]) => (
                     <div key={cat} className="flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
@@ -729,7 +899,7 @@ export default function App() {
                             return <Icone size={14} color={corCategoria(cat)} strokeWidth={2} />;
                           })()}
                         </div>
-                        <span className="text-sm font-medium" style={{ color: T.text }}>{cat}</span>
+                        <span className="text-sm font-medium" style={{ color: T.text }}>{tCategoria(cat)}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span
@@ -748,7 +918,7 @@ export default function App() {
             ) : (
               <>
               <div className="rounded-3xl p-6" style={{ background: T.card }}>
-                <p className="text-xs mb-1" style={{ color: T.textSecondary }}>Total no ano</p>
+                <p className="text-xs mb-1" style={{ color: T.textSecondary }}>{t("totalNoAno")}</p>
                 <p className="text-2xl font-extrabold mb-4" style={{ color: T.text }}>{formatoMoeda(totalAno)}</p>
                 <div style={{ height: 240 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -784,13 +954,13 @@ export default function App() {
                 </div>
 
                 {totalAno === 0 && (
-                  <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>Sem gastos registrados em {ano}.</p>
+                  <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>{t("semGastosAno", { ano })}</p>
                 )}
               </div>
 
               {porCategoriaAno.length > 0 && (
                 <>
-                  <p className="text-sm font-bold mb-3 mt-6" style={{ color: T.text }}>Por categoria</p>
+                  <p className="text-sm font-bold mb-3 mt-6" style={{ color: T.text }}>{t("porCategoria")}</p>
                   <div className="space-y-2">
                     {porCategoriaAno.map(([cat, valor]) => (
                       <div key={cat} className="flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
@@ -804,7 +974,7 @@ export default function App() {
                               return <Icone size={14} color={corCategoria(cat)} strokeWidth={2} />;
                             })()}
                           </div>
-                          <span className="text-sm font-medium" style={{ color: T.text }}>{cat}</span>
+                          <span className="text-sm font-medium" style={{ color: T.text }}>{tCategoria(cat)}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <span
@@ -829,7 +999,7 @@ export default function App() {
         {aba === "profile" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Perfil</h1>
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>{t("perfil")}</h1>
               <button
                 onClick={() => alternarTema(!escuro)}
                 aria-label="Alternar modo escuro"
@@ -858,31 +1028,31 @@ export default function App() {
             </div>
 
             <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Seu nome</label>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("seuNome")}</label>
               <input
                 value={nome}
                 onChange={(e) => salvarNome(e.target.value)}
-                placeholder="Digite seu nome"
+                placeholder={t("digiteSeuNome")}
                 className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
                 style={{ borderColor: T.border, color: T.text }}
               />
             </div>
 
             <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Salário mensal ({moeda.codigo})</label>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("salarioMensal")} ({moeda.codigo})</label>
               <input
                 inputMode="decimal"
                 value={salario}
                 onChange={(e) => salvarSalario(e.target.value)}
-                placeholder="Ex: 5000,00"
+                placeholder={t("exSalario")}
                 className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
                 style={{ borderColor: T.border, color: T.text }}
               />
-              <p className="text-[11px] mt-2" style={{ color: T.textSecondary }}>Você recebe um aviso quando os gastos do mês passarem esse valor.</p>
+              <p className="text-[11px] mt-2" style={{ color: T.textSecondary }}>{t("avisoSalario")}</p>
             </div>
 
             <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Moeda</label>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("moeda")}</label>
               <div className="flex flex-wrap gap-2 mt-3">
                 {MOEDAS.map((m) => (
                   <button
@@ -894,7 +1064,26 @@ export default function App() {
                       color: moeda.codigo === m.codigo ? "#fff" : T.pillText,
                     }}
                   >
-                    {m.nome} ({m.codigo})
+                    {tMoedaNome(m.nome)} ({m.codigo})
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("idioma")}</label>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {IDIOMAS.map((i) => (
+                  <button
+                    key={i.codigo}
+                    onClick={() => salvarIdioma(i.codigo)}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-full"
+                    style={{
+                      background: idioma === i.codigo ? "#7C3AED" : T.track,
+                      color: idioma === i.codigo ? "#fff" : T.pillText,
+                    }}
+                  >
+                    {i.nome}
                   </button>
                 ))}
               </div>
@@ -902,8 +1091,8 @@ export default function App() {
 
             <div className="rounded-2xl p-5 flex items-center justify-between" style={{ background: T.card }}>
               <div>
-                <p className="text-sm font-semibold" style={{ color: T.text }}>Total de lançamentos</p>
-                <p className="text-[11px]" style={{ color: T.textSecondary }}>Em todos os meses</p>
+                <p className="text-sm font-semibold" style={{ color: T.text }}>{t("totalLancamentos")}</p>
+                <p className="text-[11px]" style={{ color: T.textSecondary }}>{t("emTodosOsMeses")}</p>
               </div>
               <span className="text-lg font-extrabold" style={{ color: "#7C3AED" }}>{lancamentos.length}</span>
             </div>
@@ -924,9 +1113,9 @@ export default function App() {
           {NAV.slice(0, 2).map((item) => {
             const ativo = aba === item.id;
             return (
-              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
+              <button key={item.id} onClick={() => setAba(item.id)} aria-label={navLabel(item.id)} className="flex flex-col items-center gap-1 px-2 py-1">
                 <item.icone size={20} color={ativo ? "#7C3AED" : T.navInactive} strokeWidth={2.2} />
-                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{item.label}</span>
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{navLabel(item.id)}</span>
               </button>
             );
           })}
@@ -940,9 +1129,9 @@ export default function App() {
           {NAV.slice(2).map((item) => {
             const ativo = aba === item.id;
             return (
-              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
+              <button key={item.id} onClick={() => setAba(item.id)} aria-label={navLabel(item.id)} className="flex flex-col items-center gap-1 px-2 py-1">
                 <item.icone size={20} color={ativo ? "#7C3AED" : T.navInactive} strokeWidth={2.2} />
-                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{item.label}</span>
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{navLabel(item.id)}</span>
               </button>
             );
           })}
@@ -964,7 +1153,7 @@ export default function App() {
             style={{ background: T.card, paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-extrabold" style={{ color: T.text }}>Novo gasto</h2>
+              <h2 className="text-lg font-extrabold" style={{ color: T.text }}>{t("novoGasto")}</h2>
               <button type="button" onClick={() => setModalAberto(false)} aria-label="Fechar">
                 <X size={18} color={T.textSecondary} />
               </button>
@@ -972,12 +1161,12 @@ export default function App() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Descrição</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("descricao")}</label>
                 <input
                   autoFocus
                   value={form.descricao}
                   onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-                  placeholder="Ex: Supermercado"
+                  placeholder={t("exSupermercado")}
                   className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
                   style={{ borderColor: T.border, color: T.text }}
                 />
@@ -985,7 +1174,7 @@ export default function App() {
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Valor ({moeda.codigo})</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("valor")} ({moeda.codigo})</label>
                   <input
                     inputMode="decimal"
                     value={form.valor}
@@ -996,7 +1185,7 @@ export default function App() {
                   />
                 </div>
                 <div className="w-20">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Dia</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("dia")}</label>
                   <input
                     inputMode="numeric"
                     value={form.dia}
@@ -1008,7 +1197,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Categoria</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("categoria")}</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {CATEGORIAS.map((c) => (
                     <button
@@ -1022,14 +1211,14 @@ export default function App() {
                       }}
                     >
                       <c.icone size={13} strokeWidth={2.2} />
-                      {c.nome}
+                      {tCategoria(c.nome)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Cartão</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("cartao")}</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {cartoes.map((c) => (
                     <button
@@ -1051,7 +1240,7 @@ export default function App() {
                     className="text-xs font-medium px-3 py-1.5 rounded-full"
                     style={{ border: "1px dashed #C4B5FD", color: "#7C3AED" }}
                   >
-                    + novo
+                    {t("maisNovo")}
                   </button>
                 </div>
               </div>
@@ -1062,7 +1251,7 @@ export default function App() {
               className="w-full mt-6 py-3 rounded-xl text-sm font-bold text-white"
               style={{ background: "#7C3AED" }}
             >
-              Salvar gasto
+              {t("salvarGasto")}
             </button>
           </form>
         </div>
@@ -1083,7 +1272,7 @@ export default function App() {
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-extrabold" style={{ color: T.text }}>
-                {editandoCartao ? "Editar cartão" : "Novo cartão"}
+                {editandoCartao ? t("editarCartao") : t("novoCartao")}
               </h2>
               <button type="button" onClick={() => setModalCartaoAberto(false)} aria-label="Fechar">
                 <X size={18} color={T.textSecondary} />
@@ -1092,20 +1281,20 @@ export default function App() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Nome do cartão</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("nomeDoCartao")}</label>
                 <input
                   autoFocus={!editandoCartao}
                   disabled={!!editandoCartao}
                   value={formCartao.nome}
                   onChange={(e) => setFormCartao({ ...formCartao, nome: e.target.value })}
-                  placeholder="Ex: Nubank"
+                  placeholder={t("exNubank")}
                   className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none disabled:opacity-60"
                   style={{ borderColor: T.border, color: T.text }}
                 />
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Bandeira</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("bandeira")}</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {BANDEIRAS.map((b) => (
                     <button
@@ -1135,26 +1324,26 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => {
-                      const b = prompt("Nome da bandeira:");
+                      const b = prompt(t("promptNomeBandeira"));
                       if (b && b.trim()) setFormCartao({ ...formCartao, bandeira: b.trim() });
                     }}
                     className="text-xs font-medium px-3 py-1.5 rounded-full"
                     style={{ border: `1px dashed ${T.textSecondary}`, color: T.textSecondary }}
                   >
-                    + personalizada
+                    {t("maisPersonalizada")}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Cor</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("cor")}</label>
                 <div className="flex flex-wrap gap-3 mt-3">
                   {CORES_CARTAO.map((cr) => (
                     <button
                       type="button"
                       key={cr.valor}
                       onClick={() => setFormCartao({ ...formCartao, cor: cr.valor })}
-                      aria-label={cr.nome}
+                      aria-label={tCorCartao(cr.nome)}
                       className="w-9 h-9 rounded-full flex items-center justify-center"
                       style={{
                         background: cr.valor,
@@ -1167,7 +1356,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => corPersonalizadaRef.current?.click()}
-                    aria-label="Escolher cor personalizada"
+                    aria-label={t("escolherCorPersonalizada")}
                     className="w-9 h-9 rounded-full flex items-center justify-center relative overflow-hidden"
                     style={{
                       background: CORES_CARTAO.some((cr) => cr.valor === formCartao.cor)
@@ -1196,7 +1385,7 @@ export default function App() {
                 className="rounded-2xl p-4 mt-2"
                 style={{ background: `linear-gradient(135deg, ${formCartao.cor}, ${escurecerCor(formCartao.cor)})` }}
               >
-                <p className="text-xs font-semibold" style={{ color: corTextoContraste(formCartao.cor) }}>{formCartao.nome || "Nome do cartão"}</p>
+                <p className="text-xs font-semibold" style={{ color: corTextoContraste(formCartao.cor) }}>{formCartao.nome || t("nomeDoCartao")}</p>
                 <p className="text-[10px] font-black italic opacity-90 mt-3" style={{ color: corTextoContraste(formCartao.cor) }}>{formCartao.bandeira.toUpperCase()}</p>
               </div>
             </div>
@@ -1206,7 +1395,7 @@ export default function App() {
               className="w-full mt-6 py-3 rounded-xl text-sm font-bold text-white"
               style={{ background: "#7C3AED" }}
             >
-              {editandoCartao ? "Salvar alterações" : "Adicionar cartão"}
+              {editandoCartao ? t("salvarAlteracoes") : t("adicionarCartao")}
             </button>
           </form>
         </div>
