@@ -28,8 +28,6 @@ const MOEDAS = [
 
 const BANDEIRAS = ["Visa", "Mastercard"];
 
-const CAMADAS_BLUR = [2, 4, 8, 16, 28];
-
 const CORES_CARTAO = [
   { nome: "Preto", valor: "#141414" },
   { nome: "Branco", valor: "#F5F5F5" },
@@ -370,35 +368,12 @@ export default function App() {
       `}</style>
 
       <div
-        className="fixed top-0 left-0 right-0 z-40 pointer-events-none"
-        style={{ height: "calc(env(safe-area-inset-top) + 2rem)" }}
-      >
-        {CAMADAS_BLUR.map((px, i) => {
-          const inicio = (i / CAMADAS_BLUR.length) * 100;
-          const fim = ((i + 1) / CAMADAS_BLUR.length) * 100;
-          const mascara = `linear-gradient(to bottom, black ${inicio}%, black ${fim}%, transparent ${Math.min(fim + 12, 100)}%)`;
-          return (
-            <div
-              key={px}
-              className="absolute inset-0"
-              style={{
-                backdropFilter: `blur(${px}px)`,
-                WebkitBackdropFilter: `blur(${px}px)`,
-                maskImage: mascara,
-                WebkitMaskImage: mascara,
-              }}
-            />
-          );
-        })}
-        <div
-          className="absolute inset-0 transition-colors duration-500"
-          style={{
-            background: `${T.bg}99`,
-            maskImage: "linear-gradient(to bottom, black 0%, black 35%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 35%, transparent 100%)",
-          }}
-        />
-      </div>
+        className="fixed top-0 left-0 right-0 z-40 pointer-events-none transition-colors duration-500"
+        style={{
+          height: "calc(env(safe-area-inset-top) + 2rem)",
+          background: `linear-gradient(to bottom, ${T.bg} 0%, ${T.bg} 45%, transparent 100%)`,
+        }}
+      />
 
       <div
         className="max-w-md mx-auto px-5 min-h-screen"
