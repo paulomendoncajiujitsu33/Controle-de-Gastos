@@ -13,12 +13,16 @@ const CATEGORIAS = [
   { nome: "Outros", cor: "#8A93A6" },
 ];
 
+const MOEDAS = [
+  { codigo: "BRL", nome: "Real", locale: "pt-BR" },
+  { codigo: "USD", nome: "Dólar", locale: "en-US" },
+  { codigo: "EUR", nome: "Euro", locale: "de-DE" },
+  { codigo: "AED", nome: "Dirham", locale: "ar-AE" },
+  { codigo: "GBP", nome: "Libra", locale: "en-GB" },
+];
+
 function corCategoria(nome) {
   return (CATEGORIAS.find((c) => c.nome === nome) || CATEGORIAS[CATEGORIAS.length - 1]).cor;
-}
-
-function formatoMoeda(v) {
-  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 function idNovo() {
@@ -27,6 +31,7 @@ function idNovo() {
 
 const CHAVE_LANCAMENTOS = "controle-gastos:lancamentos";
 const CHAVE_CARTOES = "controle-gastos:cartoes";
+const CHAVE_MOEDA = "controle-gastos:moeda";
 
 export default function App() {
   const hoje = new Date();
@@ -35,6 +40,7 @@ export default function App() {
   const [lancamentos, setLancamentos] = useState([]);
   const [cartoes, setCartoes] = useState(["Nubank", "Inter"]);
   const [cartaoFiltro, setCartaoFiltro] = useState("Todos");
+  const [moeda, setMoeda] = useState(MOEDAS[0]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -47,6 +53,10 @@ export default function App() {
     dia: String(hoje.getDate()).padStart(2, "0"),
   });
 
+  function formatoMoeda(v) {
+    return v.toLocaleString(moeda.locale, { style: "currency", currency: moeda.codigo });
+  }
+
   // Carrega dados salvos do navegador
   useEffect(() => {
     try {
@@ -56,6 +66,13 @@ export default function App() {
     try {
       const salvoCartoes = localStorage.getItem(CHAVE_CARTOES);
       if (salvoCartoes) setCartoes(JSON.parse(salvoCartoes));
+    } catch (e) {}
+    try {
+      const salvoMoeda = localStorage.getItem(CHAVE_MOEDA);
+      if (salvoMoeda) {
+        const encontrada = MOEDAS.find((m) => m.codigo === salvoMoeda);
+        if (encontrada) setMoeda(encontrada);
+      }
     } catch (e) {}
     setCarregando(false);
   }, []);
@@ -74,6 +91,15 @@ export default function App() {
     setCartoes(lista);
     try {
       localStorage.setItem(CHAVE_CARTOES, JSON.stringify(lista));
+    } catch (e) {}
+  }
+
+  function mudarMoeda(codigo) {
+    const encontrada = MOEDAS.find((m) => m.codigo === codigo);
+    if (!encontrada) return;
+    setMoeda(encontrada);
+    try {
+      localStorage.setItem(CHAVE_MOEDA, codigo);
     } catch (e) {}
   }
 
@@ -147,7 +173,20 @@ export default function App() {
             <p className="text-[11px] tracking-[0.2em] uppercase" style={{ color: "#6B7280" }}>Extrato pessoal</p>
             <h1 className="font-display text-2xl" style={{ color: "#F2EFE6" }}>Controle de Gastos</h1>
           </div>
-          <CreditCard size={22} color="#C6A15B" strokeWidth={1.5} />
+          <div className="flex items-center gap-2">
+            <select
+              value={moeda.codigo}
+              onChange={(e) => mudarMoeda(e.target.value)}
+              className="text-xs font-mono bg-transparent border rounded-full px-2 py-1 outline-none cursor-pointer"
+              style={{ color: "#C6A15B", borderColor: "rgba(198,161,91,0.35)" }}
+              aria-label="Selecionar moeda"
+            >
+              {MOEDAS.map((m) => (
+                <option key={m.codigo} value={m.codigo} style={{ background: "#1B2233" }}>{m.codigo}</option>
+              ))}
+            </select>
+            <CreditCard size={22} color="#C6A15B" strokeWidth={1.5} />
+          </div>
         </div>
 
         {/* Cartão visual */}
@@ -314,7 +353,7 @@ export default function App() {
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Valor (R$)</label>
+                  <label className="text-[11px] uppercase tracking-wider" style={{ color: "#6B7280" }}>Valor ({moeda.codigo})</label>
                   <input
                     inputMode="decimal"
                     value={form.valor}
