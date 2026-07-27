@@ -38,7 +38,7 @@ export default function App() {
   const [ano, setAno] = useState(hoje.getFullYear());
   const [mes, setMes] = useState(hoje.getMonth());
   const [lancamentos, setLancamentos] = useState([]);
-  const [cartoes, setCartoes] = useState(["Nubank", "Inter"]);
+  const [cartoes, setCartoes] = useState([]);
   const [cartaoFiltro, setCartaoFiltro] = useState("Todos");
   const [moeda, setMoeda] = useState(MOEDAS[0]);
   const [carregando, setCarregando] = useState(true);
@@ -49,7 +49,7 @@ export default function App() {
     descricao: "",
     valor: "",
     categoria: CATEGORIAS[0].nome,
-    cartao: "Nubank",
+    cartao: "",
     dia: String(hoje.getDate()).padStart(2, "0"),
   });
 
@@ -134,7 +134,7 @@ export default function App() {
       descricao: "",
       valor: "",
       categoria: CATEGORIAS[0].nome,
-      cartao: cartoes[0] || "Nubank",
+      cartao: cartoes[0] || "",
       dia: String(Math.min(hoje.getDate(), new Date(ano, mes + 1, 0).getDate())).padStart(2, "0"),
     });
     setModalAberto(true);
