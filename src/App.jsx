@@ -400,12 +400,23 @@ export default function App() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
+                          data={[{ nome: "fundo", valor: 1 }]}
+                          dataKey="valor"
+                          innerRadius={78}
+                          outerRadius={95}
+                          fill="#EDEBF5"
+                          stroke="none"
+                          isAnimationActive={false}
+                        >
+                          <Cell fill="#EDEBF5" />
+                        </Pie>
+                        <Pie
                           data={porCategoria.map(([nome, valor]) => ({ nome, valor }))}
                           dataKey="valor"
                           nameKey="nome"
-                          innerRadius={65}
+                          innerRadius={78}
                           outerRadius={95}
-                          paddingAngle={3}
+                          paddingAngle={0}
                           strokeWidth={0}
                         >
                           {porCategoria.map(([nome]) => (
