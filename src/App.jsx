@@ -509,42 +509,29 @@ export default function App() {
 
       {/* Barra de navegação inferior */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-md">
-        <div className="bg-white rounded-full shadow-lg flex items-center justify-between px-4 py-3">
+        <div className="bg-white rounded-3xl shadow-lg flex items-center justify-between px-3 py-2.5">
           {NAV.slice(0, 2).map((item) => {
             const ativo = aba === item.id;
             return (
-              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="p-2">
-                {ativo ? (
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
-                    <item.icone size={20} color="#fff" strokeWidth={2.2} />
-                  </div>
-                ) : (
-                  <item.icone size={22} color="#C4C1D1" strokeWidth={2} />
-                )}
+              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
+                <item.icone size={20} color={ativo ? "#7C3AED" : "#C4C1D1"} strokeWidth={2.2} />
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : "#C4C1D1" }}>{item.label}</span>
               </button>
             );
           })}
 
-          <button onClick={abrirModal} aria-label="Adicionar gasto" className="p-2">
-            <div
-              className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ background: "#7C3AED" }}
-            >
-              <Plus size={20} color="#fff" strokeWidth={2.2} />
+          <button onClick={abrirModal} aria-label="Adicionar gasto" className="p-1">
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "#7C3AED" }}>
+              <Plus size={22} color="#fff" strokeWidth={2.5} />
             </div>
           </button>
 
           {NAV.slice(2).map((item) => {
             const ativo = aba === item.id;
             return (
-              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="p-2">
-                {ativo ? (
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
-                    <item.icone size={20} color="#fff" strokeWidth={2.2} />
-                  </div>
-                ) : (
-                  <item.icone size={22} color="#C4C1D1" strokeWidth={2} />
-                )}
+              <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
+                <item.icone size={20} color={ativo ? "#7C3AED" : "#C4C1D1"} strokeWidth={2.2} />
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : "#C4C1D1" }}>{item.label}</span>
               </button>
             );
           })}
