@@ -370,10 +370,12 @@ export default function App() {
       <div
         className="fixed top-0 left-0 right-0 z-40 pointer-events-none transition-colors duration-500"
         style={{
-          height: "env(safe-area-inset-top)",
+          height: "calc(env(safe-area-inset-top) + 1.5rem)",
           background: `${T.bg}CC`,
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          maskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 100%)",
         }}
       />
 
