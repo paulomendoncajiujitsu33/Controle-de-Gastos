@@ -47,6 +47,15 @@ function escurecerCor(hex, quantidade = 40) {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
+function corTextoContraste(hex) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminancia > 0.55 ? "#141414" : "#ffffff";
+}
+
 function corCategoria(nome) {
   return (CATEGORIAS.find((c) => c.nome === nome) || CATEGORIAS[CATEGORIAS.length - 1]).cor;
 }
@@ -529,6 +538,9 @@ export default function App() {
                   const info = cartaoInfo[c] || {};
                   const cor = info.cor || CORES_CARTAO[0].valor;
                   const bandeira = info.bandeira || BANDEIRAS[0];
+                  const corTexto = corTextoContraste(cor);
+                  const corTextoSuave = corTexto === "#141414" ? "rgba(20,20,20,0.65)" : "rgba(255,255,255,0.65)";
+                  const corCirculo = corTexto === "#141414" ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.08)";
                   return (
                     <div
                       key={c}
@@ -536,20 +548,20 @@ export default function App() {
                       className="rounded-2xl p-5 relative overflow-hidden cursor-pointer"
                       style={{ background: `linear-gradient(135deg, ${cor}, ${escurecerCor(cor)})` }}
                     >
-                      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
+                      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full" style={{ background: corCirculo }} />
                       <div className="flex items-center justify-between mb-8 relative">
-                        <p className="text-sm font-semibold text-white">{c}</p>
+                        <p className="text-sm font-semibold" style={{ color: corTexto }}>{c}</p>
                         <button
                           onClick={(e) => { e.stopPropagation(); removerCartao(c); }}
                           className="opacity-70 hover:opacity-100"
                         >
-                          <Trash2 size={15} color="#fff" />
+                          <Trash2 size={15} color={corTexto} />
                         </button>
                       </div>
-                      <p className="text-[11px] mb-1" style={{ color: "rgba(255,255,255,0.65)" }}>Gasto em {MESES_LONGOS[mes]}</p>
+                      <p className="text-[11px] mb-1" style={{ color: corTextoSuave }}>Gasto em {MESES_LONGOS[mes]}</p>
                       <div className="flex items-end justify-between">
-                        <p className="text-2xl font-extrabold text-white">{formatoMoeda(porCartao[c] || 0)}</p>
-                        <span className="text-xs font-black italic tracking-wide text-white opacity-90">{bandeira.toUpperCase()}</span>
+                        <p className="text-2xl font-extrabold" style={{ color: corTexto }}>{formatoMoeda(porCartao[c] || 0)}</p>
+                        <span className="text-xs font-black italic tracking-wide opacity-90" style={{ color: corTexto }}>{bandeira.toUpperCase()}</span>
                       </div>
                     </div>
                   );
@@ -1023,8 +1035,8 @@ export default function App() {
                 className="rounded-2xl p-4 mt-2"
                 style={{ background: `linear-gradient(135deg, ${formCartao.cor}, ${escurecerCor(formCartao.cor)})` }}
               >
-                <p className="text-xs font-semibold text-white">{formCartao.nome || "Nome do cartão"}</p>
-                <p className="text-[10px] font-black italic text-white opacity-90 mt-3">{formCartao.bandeira.toUpperCase()}</p>
+                <p className="text-xs font-semibold" style={{ color: corTextoContraste(formCartao.cor) }}>{formCartao.nome || "Nome do cartão"}</p>
+                <p className="text-[10px] font-black italic opacity-90 mt-3" style={{ color: corTextoContraste(formCartao.cor) }}>{formCartao.bandeira.toUpperCase()}</p>
               </div>
             </div>
 
