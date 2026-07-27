@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
-  Home, PieChart as PieChartIcon, User, Wallet, AlertTriangle,
+  Home, PieChart as PieChartIcon, User, Wallet, AlertTriangle, Sun, Moon,
 } from "lucide-react";
 
 const MESES_LONGOS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -44,6 +44,7 @@ const CHAVE_CARTOES = "controle-gastos:cartoes";
 const CHAVE_MOEDA = "controle-gastos:moeda";
 const CHAVE_PERFIL = "controle-gastos:perfil";
 const CHAVE_SALARIO = "controle-gastos:salario";
+const CHAVE_TEMA = "controle-gastos:tema";
 
 export default function App() {
   const hoje = new Date();
@@ -55,6 +56,7 @@ export default function App() {
   const [moeda, setMoeda] = useState(MOEDAS[0]);
   const [nome, setNome] = useState("");
   const [salario, setSalario] = useState("");
+  const [escuro, setEscuro] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -94,6 +96,10 @@ export default function App() {
     try {
       const s = localStorage.getItem(CHAVE_SALARIO);
       if (s) setSalario(s);
+    } catch (e) {}
+    try {
+      const s = localStorage.getItem(CHAVE_TEMA);
+      if (s) setEscuro(s === "1");
     } catch (e) {}
     setCarregando(false);
   }, []);
@@ -135,6 +141,13 @@ export default function App() {
     setSalario(valor);
     try {
       localStorage.setItem(CHAVE_SALARIO, valor);
+    } catch (e) {}
+  }
+
+  function alternarTema(valor) {
+    setEscuro(valor);
+    try {
+      localStorage.setItem(CHAVE_TEMA, valor ? "1" : "0");
     } catch (e) {}
   }
 
@@ -226,8 +239,21 @@ export default function App() {
     { id: "profile", label: "Perfil", icone: User },
   ];
 
+  const T = {
+    bg: escuro ? "#121022" : "#F6F5FB",
+    card: escuro ? "#1E1B2E" : "#FFFFFF",
+    text: escuro ? "#F2F0FA" : "#1E1B2E",
+    textSecondary: escuro ? "#A9A5C4" : "#9691A4",
+    border: escuro ? "#332F52" : "#EDE9FE",
+    track: escuro ? "#2A2740" : "#F6F5FB",
+    avatarBg: escuro ? "#2A2740" : "#EDE9FE",
+    navInactive: escuro ? "#5B5775" : "#C4C1D1",
+    pillText: escuro ? "#C7C3DA" : "#4B4759",
+    ring: escuro ? "#2A2740" : "#EDEBF5",
+  };
+
   return (
-    <div className="min-h-screen w-full" style={{ background: "#F6F5FB", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="min-h-screen w-full transition-colors duration-500" style={{ background: T.bg, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -242,13 +268,13 @@ export default function App() {
               <div className="flex items-center gap-3">
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ background: "#EDE9FE", color: "#7C3AED" }}
+                  style={{ background: T.avatarBg, color: "#7C3AED" }}
                 >
                   {iniciais(nome)}
                 </div>
                 <div>
-                  <p className="text-xs" style={{ color: "#9691A4" }}>Olá, {nome ? nome.split(" ")[0] : "tudo bem"}!</p>
-                  <p className="text-sm font-semibold" style={{ color: "#1E1B2E" }}>Bem-vindo(a) de volta</p>
+                  <p className="text-xs" style={{ color: T.textSecondary }}>Olá, {nome ? nome.split(" ")[0] : "tudo bem"}!</p>
+                  <p className="text-sm font-semibold" style={{ color: T.text }}>Bem-vindo(a) de volta</p>
                 </div>
               </div>
             </div>
@@ -308,24 +334,24 @@ export default function App() {
                   >
                     <item.icone size={22} color="#fff" strokeWidth={2} />
                   </div>
-                  <span className="text-[11px] font-medium" style={{ color: "#4B4759" }}>{item.label}</span>
+                  <span className="text-[11px] font-medium" style={{ color: T.pillText }}>{item.label}</span>
                 </button>
               ))}
             </div>
 
             {/* Transações recentes */}
             <div>
-              <p className="text-sm font-bold mb-3" style={{ color: "#1E1B2E" }}>Lançamentos recentes</p>
+              <p className="text-sm font-bold mb-3" style={{ color: T.text }}>Lançamentos recentes</p>
               {carregando ? (
-                <p className="text-sm" style={{ color: "#9691A4" }}>Carregando...</p>
+                <p className="text-sm" style={{ color: T.textSecondary }}>Carregando...</p>
               ) : doMes.length === 0 ? (
-                <div className="rounded-2xl p-6 text-center bg-white">
-                  <p className="text-sm" style={{ color: "#9691A4" }}>Nenhum gasto lançado neste mês ainda.</p>
+                <div className="rounded-2xl p-6 text-center" style={{ background: T.card }}>
+                  <p className="text-sm" style={{ color: T.textSecondary }}>Nenhum gasto lançado neste mês ainda.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {doMes.slice(0, 6).map((l) => (
-                    <div key={l.id} className="group flex items-center justify-between bg-white rounded-2xl p-3.5">
+                    <div key={l.id} className="group flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -334,14 +360,14 @@ export default function App() {
                           <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(l.categoria) }} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate" style={{ color: "#1E1B2E" }}>{l.descricao}</p>
-                          <p className="text-[11px]" style={{ color: "#9691A4" }}>
+                          <p className="text-sm font-semibold truncate" style={{ color: T.text }}>{l.descricao}</p>
+                          <p className="text-[11px]" style={{ color: T.textSecondary }}>
                             {l.cartao ? `${l.cartao} · ` : ""}{String(new Date(l.data).getDate()).padStart(2, "0")}/{String(mes + 1).padStart(2, "0")}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-sm font-bold" style={{ color: "#1E1B2E" }}>{formatoMoeda(l.valor)}</span>
+                        <span className="text-sm font-bold" style={{ color: T.text }}>{formatoMoeda(l.valor)}</span>
                         <button onClick={() => excluir(l.id)} className="opacity-0 group-hover:opacity-100 p-1">
                           <Trash2 size={14} color="#EC4899" />
                         </button>
@@ -358,16 +384,16 @@ export default function App() {
         {aba === "card" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>Meus cartões</h1>
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Meus cartões</h1>
               <button onClick={adicionarCartao} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
                 <Plus size={18} color="#fff" />
               </button>
             </div>
 
             {cartoes.length === 0 ? (
-              <div className="rounded-2xl p-8 text-center bg-white">
+              <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
                 <CreditCard size={28} color="#C4B5FD" className="mx-auto mb-3" />
-                <p className="text-sm mb-4" style={{ color: "#9691A4" }}>Você ainda não tem cartões cadastrados.</p>
+                <p className="text-sm mb-4" style={{ color: T.textSecondary }}>Você ainda não tem cartões cadastrados.</p>
                 <button onClick={adicionarCartao} className="text-sm font-semibold px-4 py-2 rounded-full text-white" style={{ background: "#7C3AED" }}>
                   Adicionar cartão
                 </button>
@@ -404,12 +430,12 @@ export default function App() {
         {aba === "stat" && (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>Estatística</h1>
-              <div className="flex items-center gap-1 bg-white rounded-full px-2 py-1">
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Estatística</h1>
+              <div className="flex items-center gap-1 rounded-full px-2 py-1" style={{ background: T.card }}>
                 <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1">
                   <ChevronLeft size={16} color="#7C3AED" />
                 </button>
-                <span className="text-xs font-semibold px-1" style={{ color: "#1E1B2E" }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
+                <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
                 <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1">
                   <ChevronRight size={16} color="#7C3AED" />
                 </button>
@@ -417,13 +443,13 @@ export default function App() {
             </div>
 
             {porCategoria.length === 0 ? (
-              <div className="rounded-2xl p-8 text-center bg-white">
-                <p className="text-sm" style={{ color: "#9691A4" }}>Sem gastos neste mês pra mostrar no gráfico.</p>
+              <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
+                <p className="text-sm" style={{ color: T.textSecondary }}>Sem gastos neste mês pra mostrar no gráfico.</p>
               </div>
             ) : (
               <>
-                <div className="bg-white rounded-3xl p-6 mb-6">
-                  <p className="text-xs mb-4" style={{ color: "#9691A4" }}>Total de gastos</p>
+                <div className="rounded-3xl p-6 mb-6" style={{ background: T.card }}>
+                  <p className="text-xs mb-4" style={{ color: T.textSecondary }}>Total de gastos</p>
                   <div className="relative" style={{ height: 220 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -432,11 +458,11 @@ export default function App() {
                           dataKey="valor"
                           innerRadius={78}
                           outerRadius={95}
-                          fill="#EDEBF5"
+                          fill={T.ring}
                           stroke="none"
                           isAnimationActive={false}
                         >
-                          <Cell fill="#EDEBF5" />
+                          <Cell fill={T.ring} />
                         </Pie>
                         <Pie
                           data={porCategoria.map(([nome, valor]) => ({ nome, valor }))}
@@ -454,19 +480,19 @@ export default function App() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <p className="text-[11px]" style={{ color: "#9691A4" }}>Total</p>
-                      <p className="text-xl font-extrabold" style={{ color: "#1E1B2E" }}>{formatoMoeda(total)}</p>
+                      <p className="text-[11px]" style={{ color: T.textSecondary }}>Total</p>
+                      <p className="text-xl font-extrabold" style={{ color: T.text }}>{formatoMoeda(total)}</p>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm font-bold mb-3" style={{ color: "#1E1B2E" }}>Por categoria</p>
+                <p className="text-sm font-bold mb-3" style={{ color: T.text }}>Por categoria</p>
                 <div className="space-y-2">
                   {porCategoria.map(([cat, valor]) => (
-                    <div key={cat} className="flex items-center justify-between bg-white rounded-2xl p-3.5">
+                    <div key={cat} className="flex items-center justify-between rounded-2xl p-3.5" style={{ background: T.card }}>
                       <div className="flex items-center gap-3">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ background: corCategoria(cat) }} />
-                        <span className="text-sm font-medium" style={{ color: "#1E1B2E" }}>{cat}</span>
+                        <span className="text-sm font-medium" style={{ color: T.text }}>{cat}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span
@@ -475,7 +501,7 @@ export default function App() {
                         >
                           {((valor / total) * 100).toFixed(0)}%
                         </span>
-                        <span className="text-sm font-bold w-24 text-right" style={{ color: "#1E1B2E" }}>{formatoMoeda(valor)}</span>
+                        <span className="text-sm font-bold w-24 text-right" style={{ color: T.text }}>{formatoMoeda(valor)}</span>
                       </div>
                     </div>
                   ))}
@@ -488,43 +514,61 @@ export default function App() {
         {/* ===== ABA PERFIL ===== */}
         {aba === "profile" && (
           <>
-            <h1 className="text-xl font-extrabold mb-6" style={{ color: "#1E1B2E" }}>Perfil</h1>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Perfil</h1>
+              <button
+                onClick={() => alternarTema(!escuro)}
+                aria-label="Alternar modo escuro"
+                className="relative w-16 h-9 rounded-full transition-colors duration-300"
+                style={{ background: escuro ? "#0B0A14" : "#E5E3ED" }}
+              >
+                <div
+                  className="absolute top-1 left-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-transform duration-300 ease-in-out"
+                  style={{
+                    background: T.card,
+                    transform: escuro ? "translateX(28px)" : "translateX(0px)",
+                  }}
+                >
+                  {escuro ? <Moon size={15} color="#C7C3DA" /> : <Sun size={15} color="#F59E0B" />}
+                </div>
+              </button>
+            </div>
 
             <div className="flex flex-col items-center mb-8">
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-3"
-                style={{ background: "#EDE9FE", color: "#7C3AED" }}
+                style={{ background: T.avatarBg, color: "#7C3AED" }}
               >
                 {iniciais(nome)}
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 mb-4">
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Seu nome</label>
+            <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Seu nome</label>
               <input
                 value={nome}
                 onChange={(e) => salvarNome(e.target.value)}
                 placeholder="Digite seu nome"
                 className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
-                style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+                style={{ borderColor: T.border, color: T.text }}
               />
             </div>
 
-            <div className="bg-white rounded-2xl p-5 mb-4">
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Salário mensal ({moeda.codigo})</label>
+            <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Salário mensal ({moeda.codigo})</label>
               <input
                 inputMode="decimal"
                 value={salario}
                 onChange={(e) => salvarSalario(e.target.value)}
                 placeholder="Ex: 5000,00"
                 className="w-full mt-2 bg-transparent border-b py-2 text-sm outline-none"
-                style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+                style={{ borderColor: T.border, color: T.text }}
               />
-              <p className="text-[11px] mt-2" style={{ color: "#9691A4" }}>Você recebe um aviso quando os gastos do mês passarem esse valor.</p>
+              <p className="text-[11px] mt-2" style={{ color: T.textSecondary }}>Você recebe um aviso quando os gastos do mês passarem esse valor.</p>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 mb-4">
-              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Moeda</label>
+            <div className="rounded-2xl p-5 mb-4" style={{ background: T.card }}>
+              <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Moeda</label>
               <div className="flex flex-wrap gap-2 mt-3">
                 {MOEDAS.map((m) => (
                   <button
@@ -532,8 +576,8 @@ export default function App() {
                     onClick={() => mudarMoeda(m.codigo)}
                     className="text-xs font-semibold px-3 py-1.5 rounded-full"
                     style={{
-                      background: moeda.codigo === m.codigo ? "#7C3AED" : "#F6F5FB",
-                      color: moeda.codigo === m.codigo ? "#fff" : "#4B4759",
+                      background: moeda.codigo === m.codigo ? "#7C3AED" : T.track,
+                      color: moeda.codigo === m.codigo ? "#fff" : T.pillText,
                     }}
                   >
                     {m.nome} ({m.codigo})
@@ -542,10 +586,10 @@ export default function App() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 flex items-center justify-between">
+            <div className="rounded-2xl p-5 flex items-center justify-between" style={{ background: T.card }}>
               <div>
-                <p className="text-sm font-semibold" style={{ color: "#1E1B2E" }}>Total de lançamentos</p>
-                <p className="text-[11px]" style={{ color: "#9691A4" }}>Em todos os meses</p>
+                <p className="text-sm font-semibold" style={{ color: T.text }}>Total de lançamentos</p>
+                <p className="text-[11px]" style={{ color: T.textSecondary }}>Em todos os meses</p>
               </div>
               <span className="text-lg font-extrabold" style={{ color: "#7C3AED" }}>{lancamentos.length}</span>
             </div>
@@ -562,13 +606,13 @@ export default function App() {
       {/* Barra de navegação inferior */}
       <div className="fixed bottom-6 left-0 right-0">
         <div className="max-w-md mx-auto px-5">
-        <div className="bg-white rounded-3xl shadow-lg flex items-center justify-between px-4 py-2.5">
+        <div className="rounded-3xl shadow-lg flex items-center justify-between px-4 py-2.5" style={{ background: T.card }}>
           {NAV.slice(0, 2).map((item) => {
             const ativo = aba === item.id;
             return (
               <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
-                <item.icone size={20} color={ativo ? "#7C3AED" : "#C4C1D1"} strokeWidth={2.2} />
-                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : "#C4C1D1" }}>{item.label}</span>
+                <item.icone size={20} color={ativo ? "#7C3AED" : T.navInactive} strokeWidth={2.2} />
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{item.label}</span>
               </button>
             );
           })}
@@ -583,8 +627,8 @@ export default function App() {
             const ativo = aba === item.id;
             return (
               <button key={item.id} onClick={() => setAba(item.id)} aria-label={item.label} className="flex flex-col items-center gap-1 px-2 py-1">
-                <item.icone size={20} color={ativo ? "#7C3AED" : "#C4C1D1"} strokeWidth={2.2} />
-                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : "#C4C1D1" }}>{item.label}</span>
+                <item.icone size={20} color={ativo ? "#7C3AED" : T.navInactive} strokeWidth={2.2} />
+                <span className="text-[10px] font-medium" style={{ color: ativo ? "#7C3AED" : T.navInactive }}>{item.label}</span>
               </button>
             );
           })}
@@ -602,54 +646,55 @@ export default function App() {
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={salvarLancamento}
-            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 bg-white"
+            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6"
+            style={{ background: T.card }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-extrabold" style={{ color: "#1E1B2E" }}>Novo gasto</h2>
+              <h2 className="text-lg font-extrabold" style={{ color: T.text }}>Novo gasto</h2>
               <button type="button" onClick={() => setModalAberto(false)} aria-label="Fechar">
-                <X size={18} color="#9691A4" />
+                <X size={18} color={T.textSecondary} />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Descrição</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Descrição</label>
                 <input
                   autoFocus
                   value={form.descricao}
                   onChange={(e) => setForm({ ...form, descricao: e.target.value })}
                   placeholder="Ex: Supermercado"
                   className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                  style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+                  style={{ borderColor: T.border, color: T.text }}
                 />
               </div>
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Valor ({moeda.codigo})</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Valor ({moeda.codigo})</label>
                   <input
                     inputMode="decimal"
                     value={form.valor}
                     onChange={(e) => setForm({ ...form, valor: e.target.value })}
                     placeholder="0,00"
                     className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                    style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+                    style={{ borderColor: T.border, color: T.text }}
                   />
                 </div>
                 <div className="w-20">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Dia</label>
+                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Dia</label>
                   <input
                     inputMode="numeric"
                     value={form.dia}
                     onChange={(e) => setForm({ ...form, dia: e.target.value.replace(/\D/g, "").slice(0, 2) })}
                     className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                    style={{ borderColor: "#EDE9FE", color: "#1E1B2E" }}
+                    style={{ borderColor: T.border, color: T.text }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Categoria</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Categoria</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {CATEGORIAS.map((c) => (
                     <button
@@ -658,8 +703,8 @@ export default function App() {
                       onClick={() => setForm({ ...form, categoria: c.nome })}
                       className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
-                        background: form.categoria === c.nome ? c.cor : "#F6F5FB",
-                        color: form.categoria === c.nome ? "#fff" : "#4B4759",
+                        background: form.categoria === c.nome ? c.cor : T.track,
+                        color: form.categoria === c.nome ? "#fff" : T.pillText,
                       }}
                     >
                       {c.nome}
@@ -669,7 +714,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: "#9691A4" }}>Cartão</label>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>Cartão</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {cartoes.map((c) => (
                     <button
@@ -678,8 +723,8 @@ export default function App() {
                       onClick={() => setForm({ ...form, cartao: c })}
                       className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
-                        background: form.cartao === c ? "#7C3AED" : "#F6F5FB",
-                        color: form.cartao === c ? "#fff" : "#4B4759",
+                        background: form.cartao === c ? "#7C3AED" : T.track,
+                        color: form.cartao === c ? "#fff" : T.pillText,
                       }}
                     >
                       {c}
