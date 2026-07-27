@@ -140,6 +140,37 @@ export default function App() {
     setCarregando(false);
   }, []);
 
+  // Bloqueia o gesto de beliscar pra dar zoom (reforço além do viewport)
+  useEffect(() => {
+    const bloquearGesto = (e) => e.preventDefault();
+    const bloquearMultiToque = (e) => {
+      if (e.touches.length > 1) e.preventDefault();
+    };
+    let ultimoToque = 0;
+    const bloquearDuploToque = (e) => {
+      const agora = Date.now();
+      if (agora - ultimoToque <= 300) e.preventDefault();
+      ultimoToque = agora;
+    };
+    document.addEventListener("gesturestart", bloquearGesto);
+    document.addEventListener("touchmove", bloquearMultiToque, { passive: false });
+    document.addEventListener("touchend", bloquearDuploToque, { passive: false });
+    return () => {
+      document.removeEventListener("gesturestart", bloquearGesto);
+      document.removeEventListener("touchmove", bloquearMultiToque);
+      document.removeEventListener("touchend", bloquearDuploToque);
+    };
+  }, []);
+
+  // Sincroniza a cor de fundo por trás da barra de status com o tema atual
+  useEffect(() => {
+    const cor = escuro ? "#121022" : "#F6F5FB";
+    document.documentElement.style.background = cor;
+    document.body.style.background = cor;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", cor);
+  }, [escuro]);
+
   function salvar(lista) {
     setLancamentos(lista);
     try {
