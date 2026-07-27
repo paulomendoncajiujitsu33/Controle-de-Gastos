@@ -525,12 +525,12 @@ export default function App() {
             );
           })}
 
-          <button onClick={abrirModal} aria-label="Adicionar gasto" className="-mt-8">
+          <button onClick={abrirModal} aria-label="Adicionar gasto" className="p-2">
             <div
-              className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
-              style={{ background: "#7C3AED", border: "4px solid #F6F5FB" }}
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: "#7C3AED" }}
             >
-              <Plus size={24} color="#fff" strokeWidth={2.5} />
+              <Plus size={20} color="#fff" strokeWidth={2.2} />
             </div>
           </button>
 
