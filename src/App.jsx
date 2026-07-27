@@ -367,7 +367,13 @@ export default function App() {
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
       `}</style>
 
-      <div className="max-w-md mx-auto px-5 pt-8 pb-28 min-h-screen">
+      <div
+        className="max-w-md mx-auto px-5 min-h-screen"
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 2rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 7rem)",
+        }}
+      >
 
         {/* ===== ABA HOME ===== */}
         {aba === "home" && (
@@ -731,7 +737,7 @@ export default function App() {
       </div>
 
       {/* Barra de navegação inferior */}
-      <div className="fixed bottom-6 left-0 right-0">
+      <div className="fixed left-0 right-0" style={{ bottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}>
         <div className="max-w-md mx-auto px-5">
         <div className="rounded-3xl shadow-lg flex items-center justify-between px-4 py-2.5" style={{ background: T.card }}>
           {NAV.slice(0, 2).map((item) => {
@@ -774,7 +780,7 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={salvarLancamento}
             className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6"
-            style={{ background: T.card }}
+            style={{ background: T.card, paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-extrabold" style={{ color: T.text }}>Novo gasto</h2>
@@ -892,7 +898,7 @@ export default function App() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={salvarFormCartao}
             className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6"
-            style={{ background: T.card }}
+            style={{ background: T.card, paddingBottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
           >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-extrabold" style={{ color: T.text }}>
