@@ -508,8 +508,8 @@ export default function App() {
       </div>
 
       {/* Barra de navegação inferior */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2.5rem)] max-w-md">
-        <div className="bg-white rounded-3xl shadow-lg flex items-center justify-between px-3 py-2.5">
+      <div className="fixed bottom-6 left-0 right-0 px-5">
+        <div className="max-w-md mx-auto bg-white rounded-3xl shadow-lg flex items-center justify-between px-4 py-2.5">
           {NAV.slice(0, 2).map((item) => {
             const ativo = aba === item.id;
             return (
