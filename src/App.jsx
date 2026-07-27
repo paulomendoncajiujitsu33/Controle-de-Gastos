@@ -307,12 +307,12 @@ export default function App() {
             {salario && parseFloat(salario.replace(",", ".")) > 0 && total > parseFloat(salario.replace(",", ".")) && (
               <div
                 className="rounded-2xl p-4 mb-6 flex items-center gap-3"
-                style={{ background: "#FEE2E2", border: "1px solid #FCA5A5" }}
+                style={{ background: "#DC2626" }}
               >
-                <AlertTriangle size={32} color="#DC2626" className="shrink-0" />
+                <AlertTriangle size={32} color="#fff" className="shrink-0" />
                 <div>
-                  <p className="text-sm font-bold" style={{ color: "#DC2626" }}>Você ultrapassou o limite de gastos</p>
-                  <p className="text-xs mt-0.5" style={{ color: "#B91C1C" }}>
+                  <p className="text-sm font-bold text-white">Você ultrapassou o limite de gastos</p>
+                  <p className="text-xs mt-0.5 text-white" style={{ opacity: 0.9 }}>
                     Gasto de {formatoMoeda(total)} contra um salário de {formatoMoeda(parseFloat(salario.replace(",", ".")))}
                   </p>
                 </div>
