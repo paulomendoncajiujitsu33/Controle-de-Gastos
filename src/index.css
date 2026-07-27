@@ -5,4 +5,17 @@
 .font-display { font-family: 'Fraunces', serif; }
 .font-mono { font-family: 'IBM Plex Mono', monospace; }
 ::selection { background: #C6A15B; color: #10141C; }
-body { margin: 0; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-x pan-y;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
