@@ -90,7 +90,7 @@ const TX = {
     moeda: "Moeda", idioma: "Idioma",
     totalLancamentos: "Total de lançamentos", emTodosOsMeses: "Em todos os meses",
     novoGasto: "Novo gasto", descricao: "Descrição", exSupermercado: "Ex: Supermercado",
-    valor: "Valor", dia: "Dia", categoria: "Categoria", cartao: "Cartão",
+    valor: "Valor", dia: "Dia", data: "Data", categoria: "Categoria", cartao: "Cartão",
     maisNovo: "+ novo", salvarGasto: "Salvar gasto",
     editarCartao: "Editar cartão", novoCartao: "Novo cartão",
     nomeDoCartao: "Nome do cartão", exNubank: "Ex: Nubank", bandeira: "Bandeira",
@@ -121,7 +121,7 @@ const TX = {
     moeda: "Currency", idioma: "Language",
     totalLancamentos: "Total entries", emTodosOsMeses: "Across all months",
     novoGasto: "New expense", descricao: "Description", exSupermercado: "E.g.: Groceries",
-    valor: "Amount", dia: "Day", categoria: "Category", cartao: "Card",
+    valor: "Amount", dia: "Day", data: "Date", categoria: "Category", cartao: "Card",
     maisNovo: "+ new", salvarGasto: "Save expense",
     editarCartao: "Edit card", novoCartao: "New card",
     nomeDoCartao: "Card name", exNubank: "E.g.: Chase", bandeira: "Brand",
@@ -152,7 +152,7 @@ const TX = {
     moeda: "Moneda", idioma: "Idioma",
     totalLancamentos: "Total de movimientos", emTodosOsMeses: "En todos los meses",
     novoGasto: "Nuevo gasto", descricao: "Descripción", exSupermercado: "Ej: Supermercado",
-    valor: "Monto", dia: "Día", categoria: "Categoría", cartao: "Tarjeta",
+    valor: "Monto", dia: "Día", data: "Fecha", categoria: "Categoría", cartao: "Tarjeta",
     maisNovo: "+ nueva", salvarGasto: "Guardar gasto",
     editarCartao: "Editar tarjeta", novoCartao: "Nueva tarjeta",
     nomeDoCartao: "Nombre de la tarjeta", exNubank: "Ej: BBVA", bandeira: "Marca",
@@ -236,7 +236,7 @@ export default function App() {
     valor: "",
     categoria: CATEGORIAS[0].nome,
     cartao: "",
-    dia: String(hoje.getDate()).padStart(2, "0"),
+    data: `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`,
   });
 
   function formatoMoeda(v) {
@@ -481,12 +481,13 @@ export default function App() {
   }
 
   function abrirModal() {
+    const diaPadrao = Math.min(hoje.getDate(), new Date(ano, mes + 1, 0).getDate());
     setForm({
       descricao: "",
       valor: "",
       categoria: CATEGORIAS[0].nome,
       cartao: cartoes[0] || "",
-      dia: String(Math.min(hoje.getDate(), new Date(ano, mes + 1, 0).getDate())).padStart(2, "0"),
+      data: `${ano}-${String(mes + 1).padStart(2, "0")}-${String(diaPadrao).padStart(2, "0")}`,
     });
     setModalAberto(true);
   }
@@ -494,9 +495,9 @@ export default function App() {
   function salvarLancamento(e) {
     e.preventDefault();
     const valorNum = parseFloat(form.valor.replace(",", "."));
-    if (!form.descricao.trim() || isNaN(valorNum) || valorNum <= 0) return;
-    const diaNum = Math.min(parseInt(form.dia, 10) || 1, new Date(ano, mes + 1, 0).getDate());
-    const data = new Date(ano, mes, diaNum).toISOString();
+    if (!form.descricao.trim() || isNaN(valorNum) || valorNum <= 0 || !form.data) return;
+    const [anoSel, mesSel, diaSel] = form.data.split("-").map(Number);
+    const data = new Date(anoSel, mesSel - 1, diaSel).toISOString();
     const novo = {
       id: idNovo(),
       descricao: form.descricao.trim(),
@@ -1172,28 +1173,27 @@ export default function App() {
                 />
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("valor")} ({moeda.codigo})</label>
-                  <input
-                    inputMode="decimal"
-                    value={form.valor}
-                    onChange={(e) => setForm({ ...form, valor: e.target.value })}
-                    placeholder="0,00"
-                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                    style={{ borderColor: T.border, color: T.text }}
-                  />
-                </div>
-                <div className="w-20">
-                  <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("dia")}</label>
-                  <input
-                    inputMode="numeric"
-                    value={form.dia}
-                    onChange={(e) => setForm({ ...form, dia: e.target.value.replace(/\D/g, "").slice(0, 2) })}
-                    className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
-                    style={{ borderColor: T.border, color: T.text }}
-                  />
-                </div>
+              <div>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("valor")} ({moeda.codigo})</label>
+                <input
+                  inputMode="decimal"
+                  value={form.valor}
+                  onChange={(e) => setForm({ ...form, valor: e.target.value })}
+                  placeholder="0,00"
+                  className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
+                  style={{ borderColor: T.border, color: T.text }}
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: T.textSecondary }}>{t("data")}</label>
+                <input
+                  type="date"
+                  value={form.data}
+                  onChange={(e) => setForm({ ...form, data: e.target.value })}
+                  className="w-full mt-1 bg-transparent border-b py-1.5 text-sm outline-none"
+                  style={{ borderColor: T.border, color: T.text, colorScheme: escuro ? "dark" : "light" }}
+                />
               </div>
 
               <div>
