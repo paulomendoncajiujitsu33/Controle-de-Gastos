@@ -370,7 +370,7 @@ export default function App() {
       <div
         className="max-w-md mx-auto px-5 min-h-screen"
         style={{
-          paddingTop: "calc(env(safe-area-inset-top) + 2rem)",
+          paddingTop: "max(calc(env(safe-area-inset-top) + 1rem), 4.5rem)",
           paddingBottom: "calc(env(safe-area-inset-bottom) + 7rem)",
         }}
       >
