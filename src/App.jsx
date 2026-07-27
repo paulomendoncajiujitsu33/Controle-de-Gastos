@@ -307,7 +307,7 @@ export default function App() {
             {salario && parseFloat(salario.replace(",", ".")) > 0 && total > parseFloat(salario.replace(",", ".")) && (
               <div
                 className="rounded-2xl p-4 mb-6 flex items-center gap-3"
-                style={{ background: "#DC2626" }}
+                style={{ background: "#D61616" }}
               >
                 <AlertTriangle size={32} color="#fff" className="shrink-0" />
                 <div>
