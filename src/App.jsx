@@ -783,17 +783,6 @@ export default function App() {
                   </ResponsiveContainer>
                 </div>
 
-                {categoriasAtivasAno.length > 0 && (
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4">
-                    {categoriasAtivasAno.map((c) => (
-                      <div key={c.nome} className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: c.cor }} />
-                        <span className="text-[11px]" style={{ color: T.textSecondary }}>{c.nome}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
                 {totalAno === 0 && (
                   <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>Sem gastos registrados em {ano}.</p>
                 )}
