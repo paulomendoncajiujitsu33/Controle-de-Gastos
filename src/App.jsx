@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import {
   Plus, Trash2, CreditCard, ChevronLeft, ChevronRight, X,
   Home, PieChart as PieChartIcon, User, Wallet, AlertTriangle, Sun, Moon,
@@ -92,6 +92,7 @@ export default function App() {
   const [cartoes, setCartoes] = useState([]);
   const [cartaoInfo, setCartaoInfo] = useState({});
   const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
+  const [visaoStat, setVisaoStat] = useState("mensal");
   const [editandoCartao, setEditandoCartao] = useState(null);
   const [formCartao, setFormCartao] = useState({ nome: "", bandeira: BANDEIRAS[0], cor: CORES_CARTAO[0].valor });
   const [moeda, setMoeda] = useState(MOEDAS[0]);
@@ -253,6 +254,19 @@ export default function App() {
     return mapa;
   }, [doMes, cartoes]);
 
+  const porMesDoAno = useMemo(() => {
+    const totais = Array(12).fill(0);
+    lancamentos.forEach((l) => {
+      const d = new Date(l.data);
+      if (d.getFullYear() === ano) {
+        totais[d.getMonth()] += l.valor;
+      }
+    });
+    return MESES_LONGOS.map((nomeMes, i) => ({ mes: nomeMes.slice(0, 3), valor: totais[i] }));
+  }, [lancamentos, ano]);
+
+  const totalAno = useMemo(() => porMesDoAno.reduce((s, m) => s + m.valor, 0), [porMesDoAno]);
+
   function mudarMes(delta) {
     let novoMes = mes + delta;
     let novoAno = ano;
@@ -260,6 +274,10 @@ export default function App() {
     if (novoMes > 11) { novoMes = 0; novoAno += 1; }
     setMes(novoMes);
     setAno(novoAno);
+  }
+
+  function mudarAno(delta) {
+    setAno(ano + delta);
   }
 
   function abrirModal() {
@@ -574,20 +592,56 @@ export default function App() {
         {/* ===== ABA ESTATÍSTICA ===== */}
         {aba === "stat" && (
           <>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-extrabold" style={{ color: T.text }}>Estatística</h1>
-              <div className="flex items-center gap-1 rounded-full px-2 py-1" style={{ background: T.card }}>
-                <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1">
-                  <ChevronLeft size={16} color="#7C3AED" />
-                </button>
-                <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
-                <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1">
-                  <ChevronRight size={16} color="#7C3AED" />
-                </button>
-              </div>
+              {visaoStat === "mensal" ? (
+                <div className="flex items-center gap-1 rounded-full px-2 py-1" style={{ background: T.card }}>
+                  <button onClick={() => mudarMes(-1)} aria-label="Mês anterior" className="p-1">
+                    <ChevronLeft size={16} color="#7C3AED" />
+                  </button>
+                  <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{MESES_LONGOS[mes].slice(0, 3)} {ano}</span>
+                  <button onClick={() => mudarMes(1)} aria-label="Próximo mês" className="p-1">
+                    <ChevronRight size={16} color="#7C3AED" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 rounded-full px-2 py-1" style={{ background: T.card }}>
+                  <button onClick={() => mudarAno(-1)} aria-label="Ano anterior" className="p-1">
+                    <ChevronLeft size={16} color="#7C3AED" />
+                  </button>
+                  <span className="text-xs font-semibold px-1" style={{ color: T.text }}>{ano}</span>
+                  <button onClick={() => mudarAno(1)} aria-label="Próximo ano" className="p-1">
+                    <ChevronRight size={16} color="#7C3AED" />
+                  </button>
+                </div>
+              )}
             </div>
 
-            {porCategoria.length === 0 ? (
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setVisaoStat("mensal")}
+                className="flex-1 text-sm font-semibold py-2 rounded-full"
+                style={{
+                  background: visaoStat === "mensal" ? "#7C3AED" : T.card,
+                  color: visaoStat === "mensal" ? "#fff" : T.pillText,
+                }}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setVisaoStat("anual")}
+                className="flex-1 text-sm font-semibold py-2 rounded-full"
+                style={{
+                  background: visaoStat === "anual" ? "#7C3AED" : T.card,
+                  color: visaoStat === "anual" ? "#fff" : T.pillText,
+                }}
+              >
+                Anual
+              </button>
+            </div>
+
+            {visaoStat === "mensal" ? (
+              porCategoria.length === 0 ? (
               <div className="rounded-2xl p-8 text-center" style={{ background: T.card }}>
                 <p className="text-sm" style={{ color: T.textSecondary }}>Sem gastos neste mês pra mostrar no gráfico.</p>
               </div>
@@ -660,6 +714,37 @@ export default function App() {
                   ))}
                 </div>
               </>
+              )
+            ) : (
+              <div className="rounded-3xl p-6" style={{ background: T.card }}>
+                <p className="text-xs mb-1" style={{ color: T.textSecondary }}>Total no ano</p>
+                <p className="text-2xl font-extrabold mb-4" style={{ color: T.text }}>{formatoMoeda(totalAno)}</p>
+                <div style={{ height: 240 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={porMesDoAno} margin={{ top: 5, right: 8, left: 8, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={T.track} vertical={false} />
+                      <XAxis
+                        dataKey="mes"
+                        tick={{ fontSize: 11, fill: T.textSecondary }}
+                        axisLine={false}
+                        tickLine={false}
+                        padding={{ left: 12, right: 12 }}
+                      />
+                      <YAxis hide width={0} />
+                      <Tooltip
+                        formatter={(valor) => formatoMoeda(valor)}
+                        contentStyle={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, fontSize: 12 }}
+                        labelStyle={{ color: T.text }}
+                        itemStyle={{ color: "#7C3AED" }}
+                      />
+                      <Line type="monotone" dataKey="valor" stroke="#7C3AED" strokeWidth={3} dot={{ r: 3, fill: "#7C3AED" }} activeDot={{ r: 5 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                {totalAno === 0 && (
+                  <p className="text-sm text-center mt-2" style={{ color: T.textSecondary }}>Sem gastos registrados em {ano}.</p>
+                )}
+              </div>
             )}
           </>
         )}
